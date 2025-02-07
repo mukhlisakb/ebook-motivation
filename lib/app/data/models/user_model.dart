@@ -1,17 +1,17 @@
 class UserResponse {
   final User user;
-  final String token;
-  final String message;
+  final String? token; // Make optional
+  final String? message; // Make optional
 
   UserResponse({
     required this.user,
-    required this.token,
-    required this.message,
+    this.token,
+    this.message,
   });
 
   factory UserResponse.fromJson(Map<String, dynamic> json) {
     return UserResponse(
-      user: User.fromJson(json['data']['user']),
+      user: User.fromJson(json['data']), // Changed from json['data']['user']
       token: json['data']['token'],
       message: json['message'],
     );
@@ -27,7 +27,7 @@ class User {
   final String phoneNumber;
   final String birthDate;
   final String jobType;
-  final String job;
+  final String? job; // Make optional since it can be null
   final String gender;
   final String cityCode;
   final String createdAt;
@@ -42,7 +42,7 @@ class User {
     required this.phoneNumber,
     required this.birthDate,
     required this.jobType,
-    required this.job,
+    this.job, // Made optional
     required this.gender,
     required this.cityCode,
     required this.createdAt,
@@ -58,15 +58,17 @@ class User {
       isPremium: json['is_premium'],
       phoneNumber: json['phone_number'],
       birthDate: json['birth_date'],
-      jobType: json['job_type'],
-      job: json['job'],
+      jobType: json['job_type'].toString(), // Convert to String
+      job: json['job']?.toString(), // Handle null and convert to String
       gender: json['gender'],
-      cityCode: json['city_code'],
+      cityCode: json['city_code'].toString(), // Convert to String
       createdAt: json['created_at'],
       city: City.fromJson(json['city']),
     );
   }
 }
+
+// City and Meta classes remain unchanged as they look correct
 
 class City {
   final String id;

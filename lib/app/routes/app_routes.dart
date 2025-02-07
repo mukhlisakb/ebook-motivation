@@ -5,10 +5,27 @@ abstract class Routes {
   static const home = _Paths.home;
   static const login = _Paths.login;
   static const register = _Paths.register;
+  static const successRegis = _Paths.successRegis;
+  static const confirmPass = _Paths.confirmPass;
   static const motivasi = _Paths.motivasi;
+  static const motivationContents = _Paths.motivationContents;
+  static const motivationContentsDrop = _Paths.motivationContentsDrop;
+  static const contentViewPush = _Paths.contentViewPush;
+  static const pengingatContents = _Paths.pengingatContents;
+  static const pengingatContentsDrop = _Paths.pengingatContentsDrop;
+  static const pengingatContentsList = _Paths.pengingatContentsList;
   static const pengingat = _Paths.pengingat;
   static const settings = _Paths.settings;
-  static const motivationDetailPage = _Paths.motivationDetailPage;  // Menambahkan rute untuk halaman detail motivasi
+  static const myAccount = _Paths.myAccount;
+  static const settingsTheme = _Paths.settingsTheme;
+  static const changePass = _Paths.changePass;
+  static const upgradeAccount = _Paths.upgradeAccount;
+  static const paymentDetail = _Paths.paymentDetail;
+  static const paymentPage = _Paths.paymentPage;
+  static const tryPremium = _Paths.tryPremium;
+  static const motivationDetailPage = _Paths
+      .motivationDetailPage; // Menambahkan rute untuk halaman detail motivasi
+  static const ticketPremium = _Paths.ticketPremium;
 }
 
 abstract class _Paths {
@@ -16,8 +33,25 @@ abstract class _Paths {
   static const home = '/home';
   static const login = '/login';
   static const register = '/register';
-  static const motivasi = '/motivasi';  // Pastikan ini sesuai dengan rute di UI
+  static const successRegis = '/success-regis';
+  static const confirmPass = '/confirm';
+  static const motivasi = '/motivasi'; // Pastikan ini sesuai dengan rute di UI
+  static const motivationContents = '/motivation/contents';
+  static const motivationContentsDrop = '/motivation-drop';
+  static const contentViewPush = '/conteng-push';
+  static const pengingatContents = '/reminders/contents';
+  static const pengingatContentsDrop = '/pengingat-conteng-drop';
+  static const pengingatContentsList = 'pengingat-conteng-list';
   static const pengingat = '/pengingat';
   static const settings = '/settings';
-  static const motivationDetailPage = '/motivation-detail-page';  // Menambahkan path untuk halaman detail motivasi
+  static const myAccount = '/my-account';
+  static const settingsTheme = '/set-theme';
+  static const changePass = '/change-pass';
+  static const upgradeAccount = '/upgrade';
+  static const paymentDetail = '/detail-payment';
+  static const paymentPage = '/payment-page';
+  static const tryPremium = '/try-premium';
+  static const motivationDetailPage =
+      '/motivation-detail-page'; // Menambahkan path untuk halaman detail motivasi
+  static const ticketPremium = '/ticket-premium';
 }

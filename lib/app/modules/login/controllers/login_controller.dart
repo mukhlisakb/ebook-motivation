@@ -19,22 +19,24 @@ class LoginController extends GetxController {
     var headers = {'Content-Type': 'application/json'};
 
     try {
-      var url = Uri.parse(ApiEndpoint.baseUrl + ApiEndpoint.authEndPoint.loginEmail);
+      var url =
+          Uri.parse(ApiEndpoint.baseUrl + ApiEndpoint.authEndPoint.loginEmail);
       Map<String, String> body = {
         'email': emailController.text.trim(),
         'password': passController.text
       };
 
       // Kirim request POST ke server
-      http.Response response = await http.post(url, body: jsonEncode(body), headers: headers);
+      http.Response response =
+          await http.post(url, body: jsonEncode(body), headers: headers);
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
-        
+
         // Cek apakah login berhasil (code == 0)
         if (json['data'] != null && json['data']['token'] != null) {
           var token = json['data']['token'];
-          
+
           // Simpan token ke SharedPreferences
           final SharedPreferences prefs = await _prefs;
           await prefs.setString('token', token);
@@ -43,7 +45,8 @@ class LoginController extends GetxController {
           isLoggedIn.value = true;
 
           // Navigasi ke HomePage
-          Get.offAllNamed('/home');  // Menggunakan GetX untuk navigasi ke halaman Home
+          Get.offAllNamed(
+              '/home'); // Menggunakan GetX untuk navigasi ke halaman Home
         } else {
           // Jika login gagal, beri pesan error
           Get.snackbar('Login Failed', 'Invalid credentials or server error');

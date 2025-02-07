@@ -1,13 +1,35 @@
-import 'package:ebookapp/app/modules/home/bindings/home_binding.dart';
-import 'package:ebookapp/app/modules/home/views/home_view.dart';
-import 'package:ebookapp/app/modules/login/bindings/login_binding.dart';
-import 'package:ebookapp/app/modules/login/views/login_view.dart';
-import 'package:ebookapp/app/modules/motivasi/bindings/motivasi_binding.dart';
-import 'package:ebookapp/app/modules/motivation_detail_page/views/motivation_detail_page_view.dart';
-import 'package:ebookapp/app/modules/register/bindings/register_binding.dart';
-import 'package:ebookapp/app/modules/register/views/register_view.dart';
+import 'package:ebookapp/app/modules/motivasi/bindings/content_binding_drop.dart';
+import 'package:ebookapp/app/modules/motivasi/views/content_view_drop.dart';
+import 'package:ebookapp/app/modules/motivasi/views/content_view_push.dart';
+import 'package:ebookapp/app/modules/register/views/set_password_view.dart';
+import 'package:ebookapp/app/modules/register/views/success_register.dart';
 import 'package:get/get.dart';
-import '../modules/motivasi/views/motivasi_view.dart';   
+
+import '../modules/home/bindings/home_binding.dart';
+import '../modules/home/views/coba_premium.dart';
+import '../modules/home/views/home_view.dart';
+import '../modules/login/bindings/login_binding.dart';
+import '../modules/login/views/login_view.dart';
+import '../modules/motivasi/bindings/content_binding.dart';
+import '../modules/motivasi/bindings/motivasi_binding.dart';
+import '../modules/motivasi/views/content_view.dart';
+import '../modules/motivasi/views/motivasi_view.dart';
+import '../modules/motivation_detail_page/views/motivation_detail_page_view.dart';
+import '../modules/pengingat/bindings/pengingat_binding.dart';
+import '../modules/pengingat/views/content_pengingat_view.dart';
+import '../modules/pengingat/views/pengingat_view.dart';
+import '../modules/register/bindings/register_binding.dart';
+import '../modules/register/views/register_view.dart';
+import '../modules/settings/bindings/settings_binding.dart';
+import '../modules/settings/views/change_password.dart';
+import '../modules/settings/views/detail_payment.dart';
+import '../modules/settings/views/my_account.dart';
+import '../modules/settings/views/payment_page.dart';
+import '../modules/settings/views/settings_theme.dart';
+import '../modules/settings/views/settings_view.dart';
+import '../modules/settings/views/upgrade_account.dart';
+import '../modules/ticket_premium/bindings/ticket_premium_binding.dart';
+import '../modules/ticket_premium/views/ticket_premium_view.dart';
 
 part 'app_routes.dart';
 
@@ -33,14 +55,91 @@ class AppPages {
       binding: RegisterBinding(),
     ),
     GetPage(
-      name: _Paths.motivasi,  // Rute untuk Motivasi
+      name: _Paths.successRegis,
+      page: () => SuccessRegister(),
+      binding: RegisterBinding(),
+    ),
+    GetPage(
+        name: _Paths.confirmPass,
+        page: () => SetPasswordView(),
+        binding: RegisterBinding()),
+    GetPage(
+      name: _Paths.motivasi, // Rute untuk Motivasi
       page: () => MotivasiView(),
       binding: MotivasiBinding(),
     ),
     GetPage(
-      name: _Paths.motivationDetailPage,  // Rute untuk Halaman Detail Motivasi
+      name: _Paths.motivationDetailPage, // Rute untuk Halaman Detail Motivasi
       page: () => MotivationDetailPage(),
       binding: MotivasiBinding(),
+    ),
+    GetPage(
+      name: _Paths.motivationContents, // Rute untuk Halaman Detail Motivasi
+      page: () => ContentView(),
+      binding: ContentBinding(),
+    ),
+    GetPage(
+      name: _Paths.motivationContentsDrop, // Rute untuk Halaman Detail Motivasi
+      page: () => ContentViewDrop(),
+      binding: ContentBindingDrop(),
+    ),
+    GetPage(
+        name: _Paths.contentViewPush,
+        page: () => ContentViewPush(),
+        binding: ContentBindingDrop()),
+    GetPage(
+      name: _Paths.pengingatContents,
+      page: () => ContentPengingatView(),
+      binding: PengingatBinding(),
+    ),
+    GetPage(
+      name: _Paths.pengingat, // Rute untuk Motivasi
+      page: () => PengingatView(),
+      binding: PengingatBinding(),
+    ),
+    GetPage(
+      name: _Paths.settings,
+      page: () => SettingsView(),
+      binding: SettingsBinding(), // Perbaikan di sini
+    ),
+    GetPage(
+      name: _Paths.myAccount,
+      page: () => AccountSettings(),
+      binding: SettingsBinding(),
+    ),
+    GetPage(
+      name: _Paths.settingsTheme,
+      page: () => SettingsTheme(),
+      binding: SettingsBinding(),
+    ),
+    GetPage(
+      name: _Paths.changePass,
+      page: () => ChangePassword(),
+      binding: SettingsBinding(),
+    ),
+    GetPage(
+      name: _Paths.upgradeAccount,
+      page: () => UpgradeAccount(),
+      binding: SettingsBinding(),
+    ),
+    GetPage(
+      name: _Paths.paymentDetail,
+      page: () => PaymentDetail(),
+      binding: SettingsBinding(),
+    ),
+    GetPage(
+      name: _Paths.paymentPage,
+      page: () => PaymentPage(),
+      binding: SettingsBinding(),
+    ),
+    GetPage(
+        name: _Paths.tryPremium,
+        page: () => CobaPremium(),
+        binding: SettingsBinding()),
+    GetPage(
+      name: _Paths.ticketPremium,
+      page: () => const TicketPremiumView(),
+      binding: TicketPremiumBinding(),
     ),
   ];
 }

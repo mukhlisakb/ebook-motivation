@@ -1,230 +1,188 @@
-import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:async';
+import 'package:flutter/material.dart';  
+import 'package:get/get.dart';  
+import 'package:http/http.dart' as http;  
+import 'dart:convert';  
+import 'package:ebookapp/app/data/models/user_model.dart';  
 
-class RegisterController extends GetxController {
-  // TextEditingControllers untuk form
-  TextEditingController nameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController phoneController = TextEditingController();
-  TextEditingController jobController = TextEditingController();
-  TextEditingController dobController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  TextEditingController confirmPasswordController = TextEditingController();
-  TextEditingController domisiliController = TextEditingController();
+class RegisterController extends GetxController {  
+  // TextEditingController untuk form fields  
+  final nameController = TextEditingController();  
+  final emailController = TextEditingController();  
+  final passwordController = TextEditingController();  
+  final confirmPasswordController = TextEditingController();  
+  final dobController = TextEditingController(); // Tanggal lahir  
+  final cityCodeController = TextEditingController();  
+  final phoneNumberController = TextEditingController();  
+  final genderController = TextEditingController();  
+  final domisiliController = TextEditingController();  
 
-  // Variabel reaktif
-  RxString selectedDomisili = ''.obs;
-  RxList<Map<String, dynamic>> domisiliList = <Map<String, dynamic>>[].obs;
-  RxBool isLoading = false.obs; // Menandakan status loading
-  RxInt selectedJobType = 0.obs;
+  // State untuk loading dan error  
+  var isLoading = false.obs;  
+  var errorMessage = ''.obs;  
+  var domisiliList = <Map<String, dynamic>>[].obs;  
+  var selectedJobType = 0.obs; // Pekerjaan (1-8)  
+  var isAgreed = false.obs;
 
-  Timer? _debounce;
+  // Fungsi untuk validasi form  
+  bool validateForm() {  
+    // Log nilai dari setiap field  
+    print('Name: ${nameController.text}');  
+    print('Email: ${emailController.text}');  
+    print('Password: ${passwordController.text}');  
+    print('Confirm Password: ${confirmPasswordController.text}');  
+    print('Birth Date: ${dobController.text}');  
+    print('City Code: ${cityCodeController.text}');  
+    print('Job Type: ${selectedJobType.value}');  
+    print('Phone Number: ${phoneNumberController.text}');  
+    print('Gender: ${genderController.text}');  
 
-  @override
-  void onInit() {
-    super.onInit();
-    domisiliController.addListener(_onDomisiliTextChanged);
-  }
+    if (nameController.text.isEmpty ||  
+        emailController.text.isEmpty ||  
+        passwordController.text.isEmpty ||  
+        confirmPasswordController.text.isEmpty ||  
+        dobController.text.isEmpty || // Periksa dobController  
+        cityCodeController.text.isEmpty ||  
+        selectedJobType.value == 0 || // Periksa selectedJobType  
+        phoneNumberController.text.isEmpty ||  
+        genderController.text.isEmpty) {  
+      errorMessage.value = 'Harap lengkapi semua field.';  
+      return false;  
+    }  
 
-  @override
-  void onClose() {
-    _debounce?.cancel();
-    domisiliController.removeListener(_onDomisiliTextChanged);
-    nameController.dispose();
-    emailController.dispose();
-    phoneController.dispose();
-    jobController.dispose();
-    dobController.dispose();
-    passwordController.dispose();
-    confirmPasswordController.dispose();
-    domisiliController.dispose();
-    super.onClose();
-  }
-
-  void _onDomisiliTextChanged() {
-    if (_debounce?.isActive ?? false) _debounce?.cancel();
-
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      if (domisiliController.text.isNotEmpty) {
-        fetchCities(domisiliController.text);
-      } else {
-        domisiliList.clear();
-      }
-    });
-  }
-
-  Future<void> fetchCities(String searchQuery) async {
-    if (searchQuery.isEmpty) {
-      domisiliList.clear();
-      return;
+    if (passwordController.text != confirmPasswordController.text) {  
+      errorMessage.value = 'Password dan konfirmasi password tidak cocok.';  
+      return false;  
     }
 
-    isLoading.value = true;
-    var url = Uri.parse(
-        'https://ebook.dev.whatthefun.id/api/v1/register/cities?search=$searchQuery');
-
-    try {
-      var response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final List<dynamic> cities = jsonDecode(response.body)['data'] ?? [];
-        domisiliList.value = cities.map((city) {
-          return {
-            'id': city['id']?.toString() ?? '',
-            'name': city['name']?.toString() ?? 'Unknown',
-          };
-        }).toList();
-      } else {
-        Get.snackbar('Error', 'Gagal memuat daftar kota');
-      }
-    } catch (e) {
-      Get.snackbar('Error', 'Terjadi kesalahan saat mengambil data kota');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  bool validateForm1() {
-    // Memastikan bahwa semua field sudah diisi dan valid
-    if (nameController.text.isEmpty) {
-      Get.snackbar('Error', 'Nama tidak boleh kosong');
-      return false;
+    if(!isAgreed.value) {
+      errorMessage.value = 'Harap setujui ketentuan dan kebijakan privasi';
     }
 
-    if (emailController.text.isEmpty ||
-        !GetUtils.isEmail(emailController.text)) {
-      Get.snackbar('Error', 'Email tidak valid');
-      return false;
-    }
+    return true;  
+  }  
 
-    if (phoneController.text.isEmpty || phoneController.text.length < 10) {
-      Get.snackbar('Error', 'Nomor telepon tidak valid');
-      return false;
-    }
+  // Fungsi untuk melakukan registrasi  
+  Future<void> register() async {  
+    if (!validateForm()) return;  
 
-    if (dobController.text.isEmpty) {
-      Get.snackbar('Error', 'Tanggal lahir tidak boleh kosong');
-      return false;
-    }
+    isLoading.value = true;  
+    errorMessage.value = '';  
 
-    // Debugging untuk melihat status Domisili
-    debugPrint('Domisili Controller Text: ${domisiliController.text}');
-    debugPrint('Selected Domisili: ${selectedDomisili.value}');
+    try {  
+      // Data yang akan dikirim ke API  
+      final Map<String, dynamic> requestBody = {  
+        "name": nameController.text,  
+        "email": emailController.text,  
+        "password": passwordController.text,  
+        "password_confirmation": confirmPasswordController.text,  
+        "birth_date": dobController.text, // Gunakan dobController  
+        "city_code": cityCodeController.text,  
+        "job_type": selectedJobType.value.toString(), // Gunakan selectedJobType  
+        "phone_number": phoneNumberController.text,  
+        "gender": genderController.text,  
+      };  
 
-    // Cek apakah domisiliController atau selectedDomisili tidak kosong
-    if (domisiliController.text.isEmpty || selectedDomisili.value.isEmpty) {
-      Get.snackbar('Error', 'Domisili tidak boleh kosong');
-      print(
-          'Domisili: ${domisiliController.text}, Selected Domisili: ${selectedDomisili.value}');
-      return false;
-    }
+      // Kirim request POST ke API  
+      final response = await http.post(  
+        Uri.parse('https://ebook.dev.whatthefun.id/api/v1/register'),  
+        headers: {'Content-Type': 'application/json'},  
+        body: jsonEncode(requestBody),  
+      );  
 
-    if (selectedJobType.value == 0) {
-      Get.snackbar('Error', 'Pilih jenis pekerjaan');
-      return false;
-    }
+      // Handle response  
+      if (response.statusCode == 200 || response.statusCode == 201) {  
+        final userResponse = UserResponse.fromJson(jsonDecode(response.body));  
+        resetForm();  
+      } else {  
+        final errorResponse = jsonDecode(response.body);  
+        errorMessage.value = errorResponse['message'] ?? 'Registrasi gagal.';  
+      }  
+    } catch (e) {  
+      errorMessage.value = 'Terjadi kesalahan: $e';  
+    } finally {  
+      isLoading.value = false;  
+    }  
+  }  
 
-    return true; // Semua field valid
-  }
+  // Fungsi untuk mencari kota  
+  Future<void> fetchCities(String query) async {  
+    if (query.isEmpty) {  
+      domisiliList.clear(); // Kosongkan daftar jika query kosong  
+      return;  
+    }  
 
-  bool validateForm2() {
-    return passwordController.text.isNotEmpty &&
-        confirmPasswordController.text.isNotEmpty &&
-        passwordController.text == confirmPasswordController.text;
-  }
+    debugPrint('🔄 Searching cities with query: $query');  
 
-  Future<void> register() async {
-    if (isLoading.value) return; // Menghindari submit ganda
-    isLoading.value = true; // Menandakan proses registrasi sedang berlangsung
+    try {  
+      final response = await http.get(  
+        Uri.parse(  
+            'https://ebook.dev.whatthefun.id/api/v1/register/cities?search=$query'),  
+        headers: {  
+          'Content-Type': 'application/json',  
+          'Accept': 'application/json',  
+        },  
+      );  
 
-    if (!validateForm1() || !validateForm2()) {
-      isLoading.value = false; // Reset status loading jika validasi gagal
-      return;
-    }
+      if (response.statusCode != 200) {  
+        Get.snackbar('Error', 'Failed to search cities');  
+        debugPrint('Error response: ${response.body}');  
+        return;  
+      }  
 
-    var headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
+      final jsonResponse = json.decode(response.body);  
+      if (jsonResponse['data'] == null) {  
+        Get.snackbar('No Data', 'No cities found.');  
+        return;  
+      }  
 
-    var url = Uri.parse('https://ebook.dev.whatthefun.id/api/v1/register');
+      // Parsing data kota  
+      domisiliList.value = List<Map<String, dynamic>>.from(  
+        jsonResponse['data'].map((city) => {  
+              'name': city['name'],  
+              'code': city['code'],  
+            }),  
+      );  
 
-    String jobTypeName = _getJobTypeName(selectedJobType.value);
+      debugPrint('✅ Cities fetched successfully: $domisiliList');  
+    } catch (e) {  
+      Get.snackbar('Error', 'An error occurred while searching cities.');  
+      debugPrint("Error searching cities: $e");  
+    }  
+  }  
 
-    var body = {
-      'name': nameController.text,
-      'email': emailController.text,
-      'phone_number': phoneController.text,
-      'job': jobTypeName,
-      'birth_date': dobController.text,
-      'gender': 'M',
-      'city_code': selectedDomisili.value,
-      'password': passwordController.text,
-      'password_confirmation': confirmPasswordController.text,
-    };
+  void onCitySelected(Map<String, dynamic> city) {  
+    // Implementasi saat kota dipilih  
+    cityCodeController.text = city['code'];  
+    domisiliList.clear(); // Kosongkan daftar setelah memilih kota  
+  }  
 
-    try {
-      http.Response response = await http.post(
-        url,
-        body: jsonEncode(body),
-        headers: headers,
-      );
+  // Fungsi untuk mereset form  
+  void resetForm() {  
+    nameController.clear();  
+    emailController.clear();  
+    passwordController.clear();  
+    confirmPasswordController.clear();  
+    dobController.clear();  
+    cityCodeController.clear();  
+    phoneNumberController.clear();  
+    genderController.clear();  
+    domisiliController.clear();  
+    domisiliList.clear();  
+    selectedJobType.value = 0; // Reset pekerjaan  
+  }  
 
-      if (response.statusCode == 200) {
-        final jsonResponse = jsonDecode(response.body);
-        await saveUserData(jsonResponse);
-        Get.snackbar('Success', 'Registrasi berhasil!');
-        Get.offAllNamed('/home');
-      } else {
-        final jsonResponse = jsonDecode(response.body);
-        String errorMessage =
-            jsonResponse['message'] ?? 'Gagal melakukan registrasi';
-        Get.snackbar('Error', errorMessage);
-      }
-    } catch (e) {
-      Get.snackbar('Error', 'Terjadi kesalahan. Silakan coba lagi.');
-    } finally {
-      isLoading.value = false; // Selalu reset status loading setelah request
-    }
-  }
-
-  Future<void> saveUserData(Map<String, dynamic> jsonResponse) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String token = jsonResponse['data']?['token']?.toString() ?? '';
-    await prefs.setString('token', token);
-  }
-
-  String _getJobTypeName(int jobType) {
-    switch (jobType) {
-      case 1:
-        return 'Pelajar';
-      case 2:
-        return 'Mahasiswa';
-      case 3:
-        return 'Pegawai Negeri';
-      case 4:
-        return 'Pegawai Swasta';
-      case 5:
-        return 'Profesional';
-      case 6:
-        return 'Ibu Rumah Tangga';
-      case 7:
-        return 'Pengusaha';
-      case 8:
-        return 'Tidak Bekerja';
-      default:
-        return 'Lainnya';
-    }
-  }
-
-  // Fungsi untuk memilih kota dari daftar
-  void onCitySelected(Map<String, dynamic> selectedCity) {
-    selectedDomisili.value = selectedCity['id']; // Update ID kota
-    domisiliController.text = selectedCity['name']; // Update nama kota ke input
-    print('Selected Domisili ID: ${selectedDomisili.value}');
-  }
+  @override  
+  void onClose() {  
+    // Dispose semua controller saat controller dihapus  
+    nameController.dispose();  
+    emailController.dispose();  
+    passwordController.dispose();  
+    confirmPasswordController.dispose();  
+    dobController.dispose();  
+    cityCodeController.dispose();  
+    phoneNumberController.dispose();  
+    genderController.dispose();  
+    domisiliController.dispose();  
+    super.onClose();  
+  }  
 }

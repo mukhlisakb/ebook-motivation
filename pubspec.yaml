@@ -30,6 +30,7 @@ environment:
 dependencies:
   cached_network_image: ^3.4.1
   cupertino_icons: ^1.0.8
+  dropdown_button2: ^2.3.9
   dropdown_search: ^6.0.2
   flutter:
     sdk: flutter
@@ -63,6 +64,18 @@ flutter:
     - assets/images/Pengingat1.png
     - assets/images/crown.png
     - assets/images/hati.png
+    - assets/images/Watermark.png
+    - assets/images/shield_check.png
+    - assets/images/caret.png
+  
+
+    #load icons assets
+    - assets/icons/crown_icon.png
+    - assets/icons/exit_icon.png
+    - assets/icons/key_icon.png
+    - assets/icons/pencil_icon.png
+    - assets/icons/user_icon.png
+    - assets/icons/payment_logo_icon.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
