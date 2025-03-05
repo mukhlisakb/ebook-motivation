@@ -23,7 +23,7 @@ class RegisterPage extends GetView<RegisterController> {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/images/Watermark.png'),
-            fit: BoxFit.cover, // Mengatur gambar agar menutupi seluruh area
+            fit: BoxFit.cover,
           ),
         ),
         child: SingleChildScrollView(
@@ -41,28 +41,16 @@ class RegisterPage extends GetView<RegisterController> {
               ),
               SizedBox(height: 20),
               // Form Fields
-              TextField(
+              _buildTextFormField(
                 controller: controller.nameController,
-                decoration: InputDecoration(
-                  labelText: 'Nama',
-                  labelStyle: GoogleFonts.leagueSpartan(
-                      color: Colors.black26, fontSize: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
+                label: 'Nama',
+                isError: controller.isNameError.value,
               ),
               SizedBox(height: 16),
-              TextField(
+              _buildTextFormField(
                 controller: controller.emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: GoogleFonts.leagueSpartan(
-                      color: Colors.black26, fontSize: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
+                label: 'Email',
+                isError: controller.isEmailError.value,
               ),
               SizedBox(height: 16),
               // Dropdown untuk Jenis Kelamin
@@ -73,6 +61,11 @@ class RegisterPage extends GetView<RegisterController> {
                       color: Colors.black26, fontSize: 14),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(20),
+                    borderSide: BorderSide(
+                      color: controller.isGenderError.value
+                          ? Colors.red
+                          : Colors.grey,
+                    ),
                   ),
                 ),
                 dropdownStyleData: DropdownStyleData(
@@ -83,13 +76,17 @@ class RegisterPage extends GetView<RegisterController> {
                   ),
                 ),
                 isExpanded: true,
-                hint: Text('Pilih Jenis Kelamin', style: GoogleFonts.leagueSpartan(
-                        color: Colors.black26, fontSize: 14),),
+                hint: Text(
+                  'Pilih Jenis Kelamin',
+                  style: GoogleFonts.leagueSpartan(
+                      color: Colors.black26, fontSize: 14),
+                ),
                 value: controller.genderController.text.isEmpty
                     ? null
                     : controller.genderController.text,
                 onChanged: (newValue) {
                   controller.genderController.text = newValue!;
+                  controller.isGenderError.value = false; // Reset error state
                 },
                 items: [
                   DropdownMenuItem(value: 'M', child: Text('Pria')),
@@ -97,54 +94,27 @@ class RegisterPage extends GetView<RegisterController> {
                 ],
               ),
               SizedBox(height: 16),
-              TextField(
+              _buildTextFormField(
                 controller: controller.phoneNumberController,
-                decoration: InputDecoration(
-                  labelText: 'Nomor Telepon',
-                  labelStyle: GoogleFonts.leagueSpartan(
-                      color: Colors.black26, fontSize: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-              TextField(
-                controller: controller.dobController,
-                decoration: InputDecoration(
-                  labelText: 'Kapan ulang tahun mu?',
-                  labelStyle: GoogleFonts.leagueSpartan(
-                      color: Colors.black26, fontSize: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                onTap: () async {
-                  DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                  );
-                  if (pickedDate != null) {
-                    String formattedDate =
-                        DateFormat('yyyy-MM-dd').format(pickedDate);
-                    controller.dobController.text = formattedDate;
+                label: 'Nomor Telepon',
+                isError: controller.isPhoneError.value,
+                onChanged: (value) {
+                  // Validasi nomor telepon
+                  if (!value.startsWith('08')) {
+                    controller.isPhoneError.value = true;
+                  } else {
+                    controller.isPhoneError.value = false;
                   }
                 },
               ),
               SizedBox(height: 16),
+              _buildDateField(context),
+              SizedBox(height: 16),
               // TextField untuk Domisili
-              TextField(
+              _buildTextFormField(
                 controller: controller.domisiliController,
-                decoration: InputDecoration(
-                  labelText: 'Domisili (Kota/Kabupaten)',
-                  labelStyle: GoogleFonts.leagueSpartan(
-                      color: Colors.black26, fontSize: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
+                label: 'Domisili (Kota/Kabupaten)',
+                isError: controller.isDomisiliError.value,
                 onChanged: (value) {
                   controller.fetchCities(value);
                 },
@@ -206,15 +176,20 @@ class RegisterPage extends GetView<RegisterController> {
                     ),
                   ),
                   isExpanded: true,
-                  hint: Text('Pilih Pekerjaan', style: GoogleFonts.leagueSpartan(
-                        color: Colors.black26, fontSize: 14),),
+                  hint: Text(
+                    'Pilih Pekerjaan',
+                    style: GoogleFonts.leagueSpartan(
+                        color: Colors.black26, fontSize: 14),
+                  ),
                   value: controller.selectedJobType.value == 0
                       ? null
                       : controller.selectedJobType.value,
                   onChanged: (newValue) {
                     controller.selectedJobType.value = newValue!;
+                    controller.isJobError.value = false; // Reset error state
                   },
                   items: [
+                    DropdownMenuItem(value: 0, child: Text('Lainnya')),
                     DropdownMenuItem(value: 1, child: Text('Pelajar')),
                     DropdownMenuItem(value: 2, child: Text('Mahasiswa')),
                     DropdownMenuItem(value: 3, child: Text('Pegawai Negeri')),
@@ -226,20 +201,113 @@ class RegisterPage extends GetView<RegisterController> {
                   ],
                 );
               }),
-              SizedBox(height: 20),
+              // TextField untuk pekerjaan jika "Lainnya" dipilih
+              Obx(() {
+                if (controller.selectedJobType.value == 0) {
+                  return Column(
+                    children: [
+                      SizedBox(height: 16), // Jarak di atas TextField
+                      _buildTextFormField(
+                        controller: controller.customJobController,
+                        label: 'Tuliskan Pekerjaan',
+                        isError: controller.isCustomJobError.value,
+                      ),
+                    ],
+                  );
+                } else {
+                  return SizedBox.shrink(); // Sembunyikan jika bukan "Lainnya"
+                }
+              }),
+              const SizedBox(height: 20),
               Obx(() {
                 return ElevatedButton(
                   onPressed: controller.isLoading.value
                       ? null
-                      : () {
-                          // Periksa apakah gender dan pekerjaan sudah dipilih
-                          if (controller.genderController.text.isEmpty ||
-                              controller.selectedJobType.value == 0) {
-                            Get.snackbar('Error',
-                                'Silakan pilih jenis kelamin dan pekerjaan.');
+                      : () async {
+                          // Reset error state
+                          controller.resetErrors();
+
+                          // Validasi semua field
+                          if (controller.nameController.text.isEmpty) {
+                            controller.isNameError.value = true;
+                            Get.snackbar(
+                              'Gagal!',
+                              'Nama tidak boleh kosong',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
                             return;
                           }
-                          controller.register();
+
+                          if (controller.emailController.text.isEmpty ||
+                              !controller.emailController.text.contains('@')) {
+                            controller.isEmailError.value = true;
+                            Get.snackbar(
+                              'Gagal!',
+                              'Email tidak valid',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                            return;
+                          }
+
+                          if (controller.genderController.text.isEmpty) {
+                            controller.isGenderError.value = true;
+                            Get.snackbar(
+                              'Gagal!',
+                              'Silakan pilih jenis kelamin',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                            return;
+                          }
+
+                          if (controller.phoneNumberController.text.isEmpty ||
+                              !controller.phoneNumberController.text
+                                  .startsWith('08')) {
+                            controller.isPhoneError.value = true;
+                            Get.snackbar(
+                              'Gagal!',
+                              'Nomor telepon tidak valid',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                            return;
+                          }
+
+                          if (controller.domisiliController.text.isEmpty) {
+                            controller.isDomisiliError.value = true;
+                            Get.snackbar(
+                              'Gagal!',
+                              'Domisili tidak boleh kosong',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                            return;
+                          }
+
+                          if (controller.selectedJobType.value == 0 &&
+                              controller.customJobController.text.isEmpty) {
+                            controller.isCustomJobError.value = true;
+                            Get.snackbar(
+                              'Gagal!',
+                              'Silakan tuliskan pekerjaan jika memilih "Lainnya"',
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                            return;
+                          }
+
+                          // Simpan data ke local storage
+                          await controller.saveDataToLocal();
+
+                          // Navigasi ke halaman konfirmasi password
                           Get.toNamed(Routes.confirmPass);
                         },
                   child: Container(
@@ -271,6 +339,61 @@ class RegisterPage extends GetView<RegisterController> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextFormField({
+    required TextEditingController controller,
+    required String label,
+    bool isError = false,
+    Function(String)? onChanged,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle:
+            GoogleFonts.leagueSpartan(color: Colors.black26, fontSize: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(
+            color: isError ? Colors.red : Colors.grey,
+          ),
+        ),
+      ),
+      onChanged: onChanged,
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return '$label tidak boleh kosong';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildDateField(BuildContext context) {
+    return TextField(
+      controller: controller.dobController,
+      decoration: InputDecoration(
+        labelText: 'Kapan ulang tahun mu?',
+        labelStyle:
+            GoogleFonts.leagueSpartan(color: Colors.black26, fontSize: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      onTap: () async {
+        DateTime? pickedDate = await showDatePicker(
+          context: context,
+          initialDate: DateTime.now(),
+          firstDate: DateTime(1900),
+          lastDate: DateTime.now(),
+        );
+        if (pickedDate != null) {
+          String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+          controller.dobController.text = formattedDate;
+        }
+      },
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:ebookapp/app/data/models/motivasi_model.dart';
 import 'package:ebookapp/app/modules/pengingat/controllers/pengingat_category_controller.dart';
 import 'package:ebookapp/app/modules/settings/controllers/setting_theme_controller.dart';
+import 'package:ebookapp/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -141,7 +142,8 @@ class PengingatView extends GetView<PengingatIdController> {
 
             return GestureDetector(
               onTap: () {
-                Get.toNamed('/reminders/contents', arguments: subcategory);
+                // Navigasi ke halaman /motivation/contents dengan subcategory sebagai argumen
+                Get.toNamed(Routes.pengingatContents, arguments: subcategory);
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

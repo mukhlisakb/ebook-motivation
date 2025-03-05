@@ -2,6 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:ebookapp/app/data/models/content_model.dart';
 import 'package:ebookapp/app/data/models/cursor_pagination_model.dart';
+import 'package:ebookapp/app/data/models/motivasi_model.dart';
+import 'package:ebookapp/app/modules/motivasi/controllers/motivasi_controller.dart';
+import 'package:ebookapp/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -12,7 +15,6 @@ class ContentController extends GetxController {
   var imageBytesList = <Rx<Uint8List?>>[].obs;
   var isLoading = false.obs;
   var nextCursor = RxnString();
-   var subcategoryId = 0.obs; // Tambahkan properti ini  
 
   @override
   void onClose() {
@@ -20,6 +22,7 @@ class ContentController extends GetxController {
     imageBytesList.clear();
     isLoading.value = false;
     nextCursor.value = null;
+
     super.onClose();
   }
 
@@ -66,12 +69,6 @@ class ContentController extends GetxController {
         return;
       }
 
-      // Reset lists if this is the first fetch
-      if (nextCursor.value == null) {
-        contents.clear();
-        imageBytesList.clear();
-      }
-
       await fetchImages(jsonResponse['data']);
 
       if (jsonResponse['meta'] != null) {
@@ -82,8 +79,6 @@ class ContentController extends GetxController {
       }
 
       debugPrint('✅ Motivasi data fetched successfully');
-      debugPrint('Total items fetched: ${contents.length}');
-      debugPrint('Next cursor: ${nextCursor.value}');
     } catch (e) {
       Get.snackbar('Error', 'An error occurred while fetching motivasi.');
       debugPrint("Error fetching motivasi: $e");
@@ -103,6 +98,7 @@ class ContentController extends GetxController {
           ? content.imageUrls.optimized
           : content.imageUrls.original;
 
+      // Tambahkan konten baru ke dalam daftar yang sudah ada
       contents.add(content);
       imageBytesList.add(imageRx);
 

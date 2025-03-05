@@ -14,8 +14,32 @@ class LoginController extends GetxController {
   // Cek apakah pengguna sudah login
   RxBool isLoggedIn = false.obs;
 
+  // State untuk error border
+  RxBool isEmailError = false.obs;
+  RxBool isPasswordError = false.obs;
+
+  // State untuk menyimpan pesan kesalahan
+  RxString errorMessage = ''.obs;
+
+  // Constructor
+  LoginController() {
+    _checkLoginStatus();
+  }
+
+  // Fungsi untuk memeriksa status login
+  Future<void> _checkLoginStatus() async {
+    final SharedPreferences prefs = await _prefs;
+    String? token = prefs.getString('token');
+
+    if (token != null) {
+      isLoggedIn.value = true;
+      // Navigasi ke HomePage jika sudah login
+      Get.offAllNamed('/home');
+    }
+  }
+
   // Fungsi untuk login dengan email dan password
-  Future<void> loginWithEmail() async {
+  Future<bool> loginWithEmail() async {
     var headers = {'Content-Type': 'application/json'};
 
     try {
@@ -47,16 +71,39 @@ class LoginController extends GetxController {
           // Navigasi ke HomePage
           Get.offAllNamed(
               '/home'); // Menggunakan GetX untuk navigasi ke halaman Home
+          return true; // Login berhasil
         } else {
-          // Jika login gagal, beri pesan error
-          Get.snackbar('Login Failed', 'Invalid credentials or server error');
+          // Jika login gagal, set error state dan pesan
+          setErrorState();
+          errorMessage.value = 'Email atau kata sandi yang ada masukkan salah';
+          Get.snackbar('Login Failed', errorMessage.value);
+          return false; // Login gagal
         }
       } else {
-        Get.snackbar('Login Failed', 'Error: ${response.statusCode}');
+        // Jika login gagal, set error state
+        setErrorState();
+        errorMessage.value = 'Email atau kata sandi yang ada masukkan salah';
+        Get.snackbar('Login Failed', errorMessage.value);
+        return false; // Login gagal
       }
     } catch (e) {
       // Tangani error seperti koneksi internet yang hilang
-      Get.snackbar('Login Failed', 'An error occurred. Please try again.');
+      setErrorState();
+      errorMessage.value = 'An error occurred. Please try again.';
+      Get.snackbar('Login Failed', errorMessage.value);
+      return false; // Login gagal
     }
+  }
+
+  // Metode untuk mengaktifkan state error (border merah)
+  void setErrorState() {
+    isEmailError.value = true;
+    isPasswordError.value = true;
+  }
+
+  // Metode untuk mereset state error saat pengguna mulai mengetik
+  void resetErrorState() {
+    isEmailError.value = false;
+    isPasswordError.value = false;
   }
 }

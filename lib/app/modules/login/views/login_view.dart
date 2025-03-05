@@ -46,68 +46,106 @@ class LoginView extends GetView<LoginController> {
             const SizedBox(height: 40),
 
             // Email Input with border and label inside
-            TextField(
-              autocorrect: false,
-              controller: emailC,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                labelText: 'Email', // Menampilkan teks label di dalam border
-                labelStyle: TextStyle(color: Colors.grey),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide:
-                      BorderSide(color: Colors.grey), // Border berwarna abu-abu
-                ),
+            Obx(
+              () => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    autocorrect: false,
+                    controller: emailC,
+                    keyboardType: TextInputType.emailAddress,
+                    onChanged: (value) {
+                      controller
+                          .resetErrorState(); // Reset error state saat mengetik
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      labelStyle: TextStyle(color: Colors.grey),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(
+                          color: controller.isEmailError.value
+                              ? Colors.red.withOpacity(0.5) // Merah transparan
+                              : Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 20),
 
             // Password Input with border and label inside
             Obx(
-              () => TextField(
-                autocorrect: false,
-                controller: passC,
-                keyboardType: TextInputType.text,
-                obscureText: controller.isHidden.value,
-                decoration: InputDecoration(
-                  labelText:
-                      'Kata sandi', // Menampilkan teks label di dalam border
-                  labelStyle: TextStyle(color: Colors.grey),
-                  filled: true,
-                  fillColor: Colors.white,
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      controller.isHidden.value = !controller.isHidden.value;
+              () => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    autocorrect: false,
+                    controller: passC,
+                    keyboardType: TextInputType.text,
+                    obscureText: controller.isHidden.value,
+                    onChanged: (value) {
+                      controller
+                          .resetErrorState(); // Reset error state saat mengetik
                     },
-                    icon: Icon(controller.isHidden.value
-                        ? Icons.visibility
-                        : Icons.visibility_off),
+                    decoration: InputDecoration(
+                      labelText: 'Kata sandi',
+                      labelStyle: TextStyle(color: Colors.grey),
+                      filled: true,
+                      fillColor: Colors.white,
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          controller.isHidden.value =
+                              !controller.isHidden.value;
+                        },
+                        icon: Icon(controller.isHidden.value
+                            ? Icons.visibility
+                            : Icons.visibility_off),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(
+                          color: controller.isPasswordError.value
+                              ? Colors.red.withOpacity(0.5) // Merah transparan
+                              : Colors.grey,
+                        ),
+                      ),
+                    ),
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide(
-                        color: Colors.grey), // Border berwarna abu-abu
-                  ),
-                ),
+                  if (controller.isPasswordError.value)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 5),
+                      child: Text(
+                        controller.errorMessage.value,
+                        style: TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
+                ],
               ),
             ),
             const SizedBox(height: 20),
 
-            // Login Button with #32497B color and white text using League Spartan font
+            // Login Button
             ElevatedButton(
               onPressed: () async {
                 controller.emailController.text = emailC.text;
                 controller.passController.text = passC.text;
-                await controller.loginWithEmail();
+                bool success = await controller.loginWithEmail();
+                if (!success) {
+                  controller
+                      .setErrorState(); // Set error state jika login gagal
+                }
               },
               child: Text(
                 'Masuk',
                 style: GoogleFonts.leagueSpartan(
                   textStyle: TextStyle(
-                    color: Colors.white, // Text color white
-                    fontSize: 16, // You can adjust the font size
+                    color: Colors.white,
+                    fontSize: 16,
                   ),
                 ),
               ),
@@ -116,14 +154,12 @@ class LoginView extends GetView<LoginController> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
-                backgroundColor: Color(0xFF32497B), // Menggunakan warna #32497B
+                backgroundColor: Color(0xFF32497B),
               ),
             ),
-            const SizedBox(
-                height:
-                    250), // Menambah jarak lebih besar antara login dan link lainnya
+            const SizedBox(height: 250),
 
-            // Forgot Password moved to the bottom
+            // Forgot Password
             TextButton(
               onPressed: () {
                 // Tindakan jika lupa password
@@ -134,13 +170,11 @@ class LoginView extends GetView<LoginController> {
               ),
             ),
 
-            // Register Button moved to the bottom // Menambah jarak antara lupa kata sandi dan pendaftaran
+            // Register Button
             Center(
               child: TextButton(
                 onPressed: () {
-                  // Navigasi ke RegisterView ketika menekan "Belum punya akun? Daftar sekarang"
-                  Get.toNamed(
-                      '/register'); // Pastikan route '/register' diarahkan ke RegisterView
+                  Get.toNamed('/register');
                 },
                 child: RichText(
                     text: TextSpan(children: [

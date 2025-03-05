@@ -10,6 +10,8 @@ class SetPasswordView extends GetView<RegisterController> {
 
   @override
   Widget build(BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Container(
@@ -23,6 +25,7 @@ class SetPasswordView extends GetView<RegisterController> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Form(
+              key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -46,30 +49,76 @@ class SetPasswordView extends GetView<RegisterController> {
                   ),
                   const SizedBox(height: 20),
                   // Kata Sandi
-                  TextFormField(
-                    controller: controller.passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Kata Sandi',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      labelStyle: GoogleFonts.leagueSpartan(),
-                    ),
-                    obscureText: true,
-                  ),
+                  Obx(() => TextFormField(
+                        controller: controller.passwordController,
+                        decoration: InputDecoration(
+                          labelText: 'Kata Sandi',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          labelStyle: GoogleFonts.leagueSpartan(),
+                          errorText: controller.isPasswordValid.value
+                              ? null
+                              : 'Kata sandi harus minimal 8 karakter dan mengandung huruf kapital',
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.isPasswordVisible.value
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () {
+                              controller.togglePasswordVisibility();
+                            },
+                          ),
+                        ),
+                        obscureText: !controller.isPasswordVisible.value,
+                        onChanged: (value) {
+                          controller.validatePassword(value);
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Kata sandi tidak boleh kosong';
+                          }
+                          return null;
+                        },
+                      )),
                   const SizedBox(height: 16),
                   // Konfirmasi Kata Sandi
-                  TextFormField(
-                    controller: controller.confirmPasswordController,
-                    decoration: InputDecoration(
-                      labelText: 'Konfirmasi Kata Sandi',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      labelStyle: GoogleFonts.leagueSpartan(),
-                    ),
-                    obscureText: true,
-                  ),
+                  Obx(() => TextFormField(
+                        controller: controller.confirmPasswordController,
+                        decoration: InputDecoration(
+                          labelText: 'Konfirmasi Kata Sandi',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          labelStyle: GoogleFonts.leagueSpartan(),
+                          errorText: controller.isConfirmPasswordValid.value
+                              ? null
+                              : 'Kata sandi tidak cocok',
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              controller.isConfirmPasswordVisible.value
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () {
+                              controller.toggleConfirmPasswordVisibility();
+                            },
+                          ),
+                        ),
+                        obscureText: !controller.isConfirmPasswordVisible.value,
+                        onChanged: (value) {
+                          controller.validateConfirmPassword(value);
+                        },
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Konfirmasi kata sandi tidak boleh kosong';
+                          }
+                          return null;
+                        },
+                      )),
                   const SizedBox(height: 16),
                   // Checkbox untuk setuju dengan kebijakan
                   Row(
@@ -79,8 +128,7 @@ class SetPasswordView extends GetView<RegisterController> {
                             onChanged: (value) {
                               if (value != null) {
                                 controller.isAgreed.value = value;
-                                _showTermsAndConditions(
-                                    context); // Tampilkan modal saat checkbox diklik
+                                _showTermsAndConditions(context);
                               }
                             },
                           )),
@@ -92,24 +140,63 @@ class SetPasswordView extends GetView<RegisterController> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 400),
+                  const SizedBox(height: 300),
                   // Tombol Buat Akun
                   ElevatedButton(
-                    onPressed: () {
-                      if (controller.validateForm()) {
-                        controller.register();
-                        Get.snackbar('Berhasil', 'Akun berhasil dibuat!');
-                        Get.offAllNamed(Routes.successRegis);
+                    onPressed: () async {
+                      if (!controller.isPasswordValid.value) {
+                        Get.snackbar(
+                          'Gagal!',
+                          'Kata sandi harus minimal 8 karakter dan mengandung huruf kapital',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                        );
+                        return;
+                      }
+
+                      if (!controller.isConfirmPasswordValid.value) {
+                        Get.snackbar(
+                          'Gagal!',
+                          'Kata sandi tidak cocok',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                        );
+                        return;
+                      }
+
+                      if (!controller.isAgreed.value) {
+                        Get.snackbar(
+                          'Gagal!',
+                          'Anda harus menyetujui ketentuan dan kebijakan privasi',
+                          snackPosition: SnackPosition.BOTTOM,
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                        );
+                        return;
+                      }
+
+                      if (_formKey.currentState!.validate()) {
+                        await controller.register();
+                        if (controller.errorMessage.value.isEmpty) {
+                          Get.offAllNamed(Routes.successRegis);
+                        } else {
+                          Get.snackbar('Gagal!', controller.errorMessage.value);
+                        }
                       } else {
-                        Get.snackbar('Error', controller.errorMessage.value);
+                        Get.snackbar(
+                            'Gagal!', 'Harap lengkapi semua field yang wajib.');
                       }
                     },
                     child: Text(
                       'Buat akun',
-                      style: GoogleFonts.leagueSpartan(color: Colors.white, fontSize: 20),
+                      style: GoogleFonts.leagueSpartan(
+                          color: Colors.white, fontSize: 20),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: colorBackground,
+                      backgroundColor: Color(
+                          0xFF32497B), // Ganti dengan colorBackground jika ada
                       minimumSize: const Size(double.infinity, 50),
                     ),
                   ),
@@ -160,7 +247,7 @@ class SetPasswordView extends GetView<RegisterController> {
                   'Aplikasi ini hanya boleh digunakan oleh individu yang berusia minimal 13 tahun.\n'
                   'Jika Anda berusia di bawah 18 tahun, Anda harus mendapatkan izin dari orang tua atau wali Anda.\n'
                   '2.3 Penggunaan yang Dilarang\n'
-                  'Anda dilarang menggunakan Aplikasi untuk:\n'
+                  'You dilarang menggunakan Aplikasi untuk:\n'
                   'Konten yang melanggar hukum, diskriminatif, atau berisi ujaran kebencian.\n'
                   'Mendistribusikan ulang konten dari Aplikasi tanpa persetujuan tertulis dari Kami.\n\n'
                   '3. Fitur Pembayaran\n'
@@ -170,17 +257,17 @@ class SetPasswordView extends GetView<RegisterController> {
                   'Semall transaksi bersifat final dan tidak dapat dikembalikan, kecuali terdapat kesalahan teknis pada sistem Kami.\n'
                   '3.2 Keamanan Pembayaran\n'
                   'Kami bekerja sama dengan penyedia layanan pembayaran terpercaya untuk memproses transaksi Anda.\n'
-                  'Anda wajib memastikan informasi pembayaran yang diberikan adalah benar dan akurat.\n\n'
+                  'You wajib memastikan informasi pembayaran yang diberikan adalah benar dan akurat.\n\n'
                   '4. Hak Kekayaan Intelektual\n'
                   '4.1 Hak Cipta dan Konten\n'
                   'Semua konten di Aplikasi, termasuk e-book, artikel, desain, logo, dan fitur lainnya, '
-                  'adalah milik Kami atau pemberi lisensi Kami, dan dilindungi oleh undang-undang hak cipta.\n'
-                  'Anda tidak diperbolehkan menyalin, mendistribusikan, atau memodifikasi konten Aplikasi tanpa izin tertulis dari Kami.\n\n'
+                  'adalam milik Kami atau pemberi lisensi Kami, dan dilindungi oleh undang-undang hak cipta.\n'
+                  'You tidak diperbolehkan menyalin, mendistribusikan, atau memodifikasi konten Aplikasi tanpa izin tertulis dari Kami.\n\n'
                   '5. Kebijakan Keamanan\n'
                   '5.1 Data Pengguna\n'
                   'Kami berkomitmen untuk menjaga keamanan data pribadi Anda. Kebijakan penggunaan data sepenuhnya diatur dalam Kebijakan Privasi Kami.\n'
                   '5.2 Tanggung Jawab Anda\n'
-                  'Anda bertanggung jawab atas keamanan perangkat Anda dalam menggunakan Aplikasi, '
+                  'You bertanggung jawab atas keamanan perangkat Anda dalam menggunakan Aplikasi, '
                   'termasuk memastikan perangkat bebas dari virus atau perangkat lunak berbahaya lainnya.\n'
                   '5.3 Penyalahgunaan Akun\n'
                   'Kami tidak bertanggung jawab atas akses yang tidak sah ke akun Anda yang disebabkan oleh kelalaian Anda dalam menjaga kerahasiaan data akun Anda.\n\n'
@@ -209,14 +296,15 @@ class SetPasswordView extends GetView<RegisterController> {
                   'KEBIJAKAN PRIVASI\n'
                   'Aplikasi Mobile Motivasi Penyejuk Hati dari Al-Qur’an\n'
                   'Versi Terakhir: 6 Desember 2024\n'
-                  'Kami, [Eli Nur Nirmala Sari] ("Kami"), menghargai privasi Anda dan berkomitmen untuk melindungi data pribadi yang Anda berikan saat menggunakan aplikasi mobile Motivasi Penyejuk Hati dari Al-Qur’an ("Aplikasi"). Kebijakan Privasi ini menjelaskan bagaimana Kami mengumpulkan, menggunakan, menyimpan, dan melindungi informasi pribadi Anda.\n'
+                  'Kami, [Eli Nur Nirmala Sari] ("Kami"), menghargai privasi Anda dan berkomitmen untuk melindungi data pribadi yang Anda berikan saat menggunakan aplikasi mobile Motivasi Penyejuk Hati dari Al-Quran'
+                  'an ("Aplikasi"). Kebijakan Privasi ini menjelaskan bagaimana Kami mengumpulkan, menggunakan, menyimpan, dan melindungi informasi pribadi Anda.\n'
                   'Dengan menggunakan Aplikasi, Anda menyetujui pengumpulan dan penggunaan informasi sebagaimana diatur dalam Kebijakan Privasi ini. Jika Anda tidak setuju, mohon untuk tidak menggunakan Aplikasi ini.\n\n'
                   '1. Informasi yang Kami Kumpulkan\n'
                   'Kami mengumpulkan informasi berikut dari pengguna:\n'
                   '1.1 Informasi Pribadi\n'
                   'Nama lengkap.\n'
                   'Alamat email.\n'
-                  'Nomor telepon'
+                  'Nomor telepon\n'
                   'Domisili\n'
                   'Usia.\n'
                   'Informasi pembayaran (hanya digunakan saat Anda melakukan pembelian).\n'
@@ -243,7 +331,7 @@ class SetPasswordView extends GetView<RegisterController> {
                   '3. Bagaimana Kami Melindungi Data Anda\n'
                   'Kami menerapkan langkah-langkah berikut untuk menjaga keamanan data Anda:\n'
                   '3.1 Enkripsi\n'
-                  'Semua data pribadi dan informasi pembayaran dienkripsi menggunakan protokol keamanan (seperti HTTPS dan SSL) untuk mencegah akses tidak sah selama transmisi.\n'
+                  'Semall data pribadi dan informasi pembayaran dienkripsi menggunakan protokol keamanan (seperti HTTPS dan SSL) untuk mencegah akses tidak sah selama transmisi.\n'
                   '3.2 Pembatasan Akses\n'
                   'Hanya karyawan yang berwenang yang dapat mengakses data pribadi Anda.\n'
                   '3.3 Audit Keamanan\n'

@@ -126,7 +126,7 @@ class PaymentDetail extends GetView<PaymentController> {
                             ),
                           ),
                           Text(
-                            'Rp 29.000,00',
+                            'Rp 29.900,00',
                             style: GoogleFonts.leagueSpartan(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -226,6 +226,8 @@ class PaymentDetail extends GetView<PaymentController> {
                                               selectedChannelCode = channelCode;
                                               Get.snackbar('Berhasil',
                                                   'Metode pembayaran dipilih: $channelCode');
+                                              // Update UI
+                                              Get.forceAppUpdate();
                                             },
                                             contentPadding:
                                                 const EdgeInsets.symmetric(
@@ -236,7 +238,15 @@ class PaymentDetail extends GetView<PaymentController> {
                                               borderRadius:
                                                   BorderRadius.circular(8),
                                             ),
-                                            tileColor: Colors.white,
+                                            tileColor: selectedChannelCode ==
+                                                    channelCode
+                                                ? Colors.blue.withOpacity(0.1)
+                                                : Colors.white,
+                                            selected: selectedChannelCode ==
+                                                channelCode,
+                                            selectedTileColor:
+                                                Colors.blue.withOpacity(0.1),
+                                            selectedColor: Colors.blue,
                                           );
                                         }).toList(),
                                       ),
@@ -289,7 +299,7 @@ class PaymentDetail extends GetView<PaymentController> {
                             ),
                           ),
                           Text(
-                            'Rp 29.000,00',
+                            'Rp 29.900,00',
                             style: GoogleFonts.leagueSpartan(
                               fontSize: 16,
                             ),
@@ -307,7 +317,7 @@ class PaymentDetail extends GetView<PaymentController> {
                             ),
                           ),
                           Text(
-                            'Rp -',
+                            'Rp 0,00',
                             style: GoogleFonts.leagueSpartan(
                               fontSize: 16,
                             ),
@@ -328,7 +338,7 @@ class PaymentDetail extends GetView<PaymentController> {
                             ),
                           ),
                           Text(
-                            'Rp 29.000,00',
+                            'Rp 29.900,00',
                             style: GoogleFonts.leagueSpartan(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,

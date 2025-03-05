@@ -26,7 +26,7 @@ class User {
   final bool isPremium;
   final String phoneNumber;
   final String birthDate;
-  final String jobType;
+  final int jobType; // Ubah menjadi int
   final String? job; // Make optional since it can be null
   final String gender;
   final String cityCode;
@@ -55,20 +55,19 @@ class User {
       name: json['name'],
       email: json['email'],
       emailVerifiedAt: json['email_verified_at'],
-      isPremium: json['is_premium'],
+      isPremium: json['is_premium'] ?? false,
       phoneNumber: json['phone_number'],
       birthDate: json['birth_date'],
-      jobType: json['job_type'].toString(), // Convert to String
-      job: json['job']?.toString(), // Handle null and convert to String
+      jobType: int.tryParse(json['job_type']?.toString() ?? '0') ??
+          0, // Ubah menjadi int
+      job: json['job']?.toString(),
       gender: json['gender'],
-      cityCode: json['city_code'].toString(), // Convert to String
+      cityCode: json['city_code']?.toString() ?? '',
       createdAt: json['created_at'],
       city: City.fromJson(json['city']),
     );
   }
 }
-
-// City and Meta classes remain unchanged as they look correct
 
 class City {
   final String id;

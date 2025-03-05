@@ -46,7 +46,11 @@ class PaymentPage extends GetView<PaymentController> {
       () => Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          title: const Text('Pembayaran'),
+          title: Text(
+            'Pembayaran',
+            style: GoogleFonts.leagueSpartan(
+                color: Colors.white, fontWeight: FontWeight.w500),
+          ),
           backgroundColor: const Color(0xFF32497B),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -291,38 +295,67 @@ class PaymentPage extends GetView<PaymentController> {
                   ),
                   const SizedBox(height: 14), // Margin antar card
 
-                  // Petunjuk Pembayaran Card
+                  // Petunjuk Pembayaran Dropdown
                   Container(
                     width: 372,
-                    height: 70, // Sesuaikan tinggi card
-                    child: Card(
+                    decoration: BoxDecoration(
                       color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Petunjuk Pembayaran',
-                              style: GoogleFonts.leagueSpartan(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'v',
-                              style: GoogleFonts.leagueSpartan(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.2),
+                          spreadRadius: 2,
+                          blurRadius: 5,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: ExpansionTile(
+                      title: Text(
+                        'Petunjuk Pembayaran',
+                        style: GoogleFonts.leagueSpartan(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                      trailing: Obx(() => Icon(
+                            controller.isExpanded.value
+                                ? Icons.arrow_drop_up
+                                : Icons.arrow_drop_down,
+                            color: Colors.black,
+                          )),
+                      onExpansionChanged: (expanded) {
+                        controller.isExpanded.value = expanded;
+                      },
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '1. Pilih m-Transfer > BCA Virtual Account',
+                                style: GoogleFonts.leagueSpartan(fontSize: 14),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '2. Masukkan nomor Virtual Account ${controller.virtualAccountNumber.value ?? ""} dan pilih send.',
+                                style: GoogleFonts.leagueSpartan(fontSize: 14),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '3. Periksa informasi yang tertera di layar. Pastikan tagihan dan merchant sudah sesuai.',
+                                style: GoogleFonts.leagueSpartan(fontSize: 14),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '4. Masukkan pin-BCA anda dan klik OK.',
+                                style: GoogleFonts.leagueSpartan(fontSize: 14),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 34), // Margin antar card

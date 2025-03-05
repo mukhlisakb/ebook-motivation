@@ -107,7 +107,7 @@ class TicketPremiumView extends GetView<TicketPremiumController> {
                   ),
                 ),
               ),
-              const SizedBox(height: 180),
+              const SizedBox(height: 32), // Mengurangi jarak untuk responsif
               Text(
                 'Belum tertarik?',
                 textAlign: TextAlign.center,
@@ -129,9 +129,11 @@ class TicketPremiumView extends GetView<TicketPremiumController> {
                 ),
               ),
               const SizedBox(height: 16),
+              // Button yang dinamis
               Container(
+                width:
+                    MediaQuery.of(context).size.width * 0.9, // 90% lebar layar
                 height: 50,
-                width: 380,
                 child: ElevatedButton(
                   onPressed: () {
                     Get.toNamed(Routes.paymentDetail);

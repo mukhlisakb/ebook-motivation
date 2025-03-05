@@ -10,6 +10,7 @@ class UserController extends GetxController {
   var userResponse = Rxn<UserResponse>(); // Menyimpan data UserResponse
   var isPremium = false.obs; // Menyimpan status premium user
   var userId = Rxn<int>();
+  final isScrollLimitReached = false.obs;
 
   @override
   void onInit() {

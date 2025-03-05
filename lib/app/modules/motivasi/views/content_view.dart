@@ -8,16 +8,15 @@ import 'package:ebookapp/core/constants/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ContentView extends GetView<ContentController> {
   const ContentView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Periksa apakah Get.arguments tidak null
     final Subcategory? subcategory = Get.arguments as Subcategory?;
 
-    // Jika subcategory null, tampilkan pesan kesalahan
     if (subcategory == null) {
       return Scaffold(
         body: Center(child: Text("Subcategory tidak ditemukan")),
@@ -27,101 +26,32 @@ class ContentView extends GetView<ContentController> {
     final ThemeController themeController = Get.find<ThemeController>();
     final UserController userController = Get.find<UserController>();
 
-    // Pastikan userController sudah diinisialisasi
     if (userController.isPremium.value == null) {
       return Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
+    // Memantau perubahan isPremium
+    ever(userController.isPremium, (isPremium) async {
+      if (isPremium) {
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.remove('slideCount'); // Hapus slideCount
+        await prefs
+            .remove('isScrollLimitReached'); // Hapus isScrollLimitReached
+        debugPrint("SharedPreferences dihapus karena isPremium = true");
+      }
+    });
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _buildBody(subcategory, themeController, userController),
-    );
-  }
-
-  Widget _buildBody(Subcategory subcategory, ThemeController themeController,
-      UserController userController) {
-    final ScrollController scrollController = ScrollController();
-    bool isAppBarVisible = true;
-
-    return GetBuilder<ContentController>(
-      initState: (_) => controller.fetchContents(subcategoryId: subcategory.id),
-      builder: (controller) {
-        if (controller.isLoading.value && controller.imageBytesList.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (controller.imageBytesList.isEmpty) {
-          return const Center(child: Text("No images available"));
-        }
-
-        return NotificationListener<ScrollNotification>(
-          onNotification: (ScrollNotification scrollInfo) {
-            // Jika isPremium = false dan pengguna mencoba scroll ke halaman ke-4
-            if (!userController.isPremium.value &&
-                controller.imageBytesList.length >= 3 &&
-                scrollInfo.metrics.pixels >
-                    scrollInfo.metrics.maxScrollExtent * 0.75) {
-              Get.toNamed(
-                  Routes.ticketPremium); // Navigasi ke halaman ticketPremium
-              return true; // Hentikan scroll
-            }
-
-            // Sembunyikan AppBar saat scroll ke bawah
-            if (scrollInfo.metrics.pixels > 100 && isAppBarVisible) {
-              isAppBarVisible = false;
-              Get.find<ContentController>().update();
-            }
-            // Tampilkan AppBar saat scroll ke atas
-            else if (scrollInfo.metrics.pixels <= 100 && !isAppBarVisible) {
-              isAppBarVisible = true;
-              Get.find<ContentController>().update();
-            }
-
-            // Pagination saat mencapai akhir scroll
-            if (scrollInfo.metrics.pixels ==
-                    scrollInfo.metrics.maxScrollExtent &&
-                controller.nextCursor.value != null) {
-              controller.fetchContents(subcategoryId: subcategory.id);
-            }
-            return true;
-          },
-          child: Stack(
-            children: [
-              PageView.builder(
-                scrollDirection: Axis.vertical,
-                itemCount: userController.isPremium.value
-                    ? controller.imageBytesList.length +
-                        (controller.nextCursor.value != null ? 1 : 0)
-                    : (controller.imageBytesList.length > 3
-                        ? 3
-                        : controller.imageBytesList.length),
-                itemBuilder: (context, index) {
-                  // Pastikan index tidak melebihi panjang list
-                  if (index >= controller.imageBytesList.length) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  // Pastikan value tidak null sebelum mengaksesnya
-                  final imageBytes = controller.imageBytesList[index].value;
-                  if (imageBytes == null) {
-                    return const Center(child: Text("Image data is null"));
-                  }
-
-                  return _buildPageItem(index, imageBytes);
-                },
-              ),
-              // AppBar yang bisa hide/show
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 300),
-                top: isAppBarVisible ? 0 : -kToolbarHeight,
-                left: 0,
-                right: 0,
-                child: _buildAppBar(subcategory, themeController),
-              ),
-            ],
-          ),
-        );
-      },
+      appBar: _buildAppBar(subcategory, themeController),
+      body: Stack(
+        children: [
+          Image.asset('assets/images/screen_view.png', height: 917, width: 600),
+          _buildBody(subcategory, themeController, userController),
+        ],
+      ),
     );
   }
 
@@ -159,7 +89,7 @@ class ContentView extends GetView<ContentController> {
         GestureDetector(
           onTap: () {
             debugPrint('Image clicked');
-            Get.toNamed(Routes.motivationContentsDrop, arguments: subcategory);
+            Get.toNamed(Routes.pengingatContentsDrop, arguments: subcategory);
           },
           child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -174,13 +104,115 @@ class ContentView extends GetView<ContentController> {
     );
   }
 
+  Widget _buildBody(
+    Subcategory subcategory,
+    ThemeController themeController,
+    UserController userController,
+  ) {
+    // Menggunakan RxInt untuk slideCount
+    final slideCount = 0.obs;
+
+    // Gunakan PageController dengan keepPage: true
+    final PageController pageController = PageController(keepPage: true);
+
+    return GetBuilder<ContentController>(
+      initState: (_) => controller.fetchContents(subcategoryId: subcategory.id),
+      builder: (controller) {
+        if (controller.isLoading.value && controller.imageBytesList.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (controller.imageBytesList.isEmpty) {
+          return const Center(child: Text("No images available"));
+        }
+
+        return FutureBuilder(
+          future: SharedPreferences.getInstance(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            final SharedPreferences prefs = snapshot.data!;
+            final int? storedUserId = prefs.getInt('userId');
+            final int? currentUserId = userController.userId.value;
+
+            // Jika userId berbeda, hapus data SharedPreferences
+            if (storedUserId != currentUserId) {
+              prefs.remove('slideCount');
+              prefs.remove('isScrollLimitReached');
+              prefs.setInt('userId', currentUserId ?? 0); // Simpan sebagai int
+            }
+
+            bool isScrollLimitReached =
+                prefs.getBool('isScrollLimitReached') ?? false;
+
+            // Jika isScrollLimitReached == true dan isPremium == false, pindah ke halaman ticketPremium
+            if (isScrollLimitReached && !userController.isPremium.value) {
+              Future.microtask(() => Get.offNamed(Routes.ticketPremium));
+              return const SizedBox.shrink(); // Kembalikan widget kosong
+            }
+
+            return NotificationListener<ScrollNotification>(
+              onNotification: (ScrollNotification scrollInfo) {
+                // Cek apakah scroll mencapai akhir halaman
+                if (scrollInfo.metrics.pixels ==
+                    scrollInfo.metrics.maxScrollExtent) {
+                  // Increment slideCount hanya jika scroll mencapai akhir halaman
+                  slideCount.value++;
+                  debugPrint("Slide count: ${slideCount.value}");
+
+                  // Jika slideCount >= 2 dan pengguna bukan premium, pindah ke halaman ticketPremium
+                  if (!userController.isPremium.value &&
+                      slideCount.value >= 2) {
+                    prefs.setBool('isScrollLimitReached', true);
+                    Future.microtask(() => Get.offNamed(Routes.ticketPremium));
+                  }
+
+                  // Panggil fetchContents untuk memuat lebih banyak gambar
+                  controller.fetchContents(subcategoryId: subcategory.id);
+                }
+
+                return true;
+              },
+              child: PageView.builder(
+                controller: pageController, // Gunakan PageController
+                scrollDirection: Axis.vertical,
+                itemCount: userController.isPremium.value
+                    ? controller.imageBytesList.length +
+                        (controller.nextCursor.value != null ? 1 : 0)
+                    : (controller.imageBytesList.length > 3
+                        ? 3
+                        : controller.imageBytesList.length),
+                itemBuilder: (context, index) {
+                  if (index >= controller.imageBytesList.length) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final imageBytes = controller.imageBytesList[index].value;
+                  if (imageBytes == null) {
+                    return const Center(child: Text("Image data is null"));
+                  }
+
+                  return _buildPageItem(index, imageBytes);
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildPageItem(int index, Uint8List imageBytes) {
     return Stack(
       children: [
         Positioned.fill(
-          child: Image.memory(
-            imageBytes,
-            fit: BoxFit.contain,
+          child: InteractiveViewer(
+            minScale: 1.0,
+            maxScale: 3.0,
+            child: Image.memory(
+              imageBytes,
+              fit: BoxFit.contain,
+            ),
           ),
         ),
         Positioned(

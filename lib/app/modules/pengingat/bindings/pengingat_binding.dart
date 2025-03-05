@@ -1,3 +1,4 @@
+import 'package:ebookapp/app/modules/motivasi/controllers/motivasi_controller.dart';
 import 'package:ebookapp/app/modules/pengingat/controllers/pengingat_category_controller.dart';
 import 'package:ebookapp/app/modules/settings/controllers/setting_theme_controller.dart';
 import 'package:ebookapp/app/modules/settings/controllers/user_controller.dart';
@@ -19,6 +20,9 @@ class PengingatBinding extends Bindings {
     );
     Get.lazyPut<UserController>(
       () => UserController(),
+    );
+    Get.lazyPut<MotivasiController>(
+      () => MotivasiController(),
     );
   }  
 }  

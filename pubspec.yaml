@@ -46,6 +46,7 @@ dependencies:
   webp: ^1.0.0+1
 
 dev_dependencies:
+  flutter_launcher_icons: ^0.14.3
   flutter_lints: ^5.0.0
   flutter_test:
     sdk: flutter
@@ -67,7 +68,9 @@ flutter:
     - assets/images/Watermark.png
     - assets/images/shield_check.png
     - assets/images/caret.png
-  
+    - assets/images/screen_news.png
+    - assets/images/screen_view.png
+    - assets/images/Abu_gradasi.png
 
     #load icons assets
     - assets/icons/crown_icon.png
@@ -103,3 +106,8 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/android_icon.png"

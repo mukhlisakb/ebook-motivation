@@ -6,6 +6,7 @@ import 'package:ebookapp/core/constants/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../controllers/settings_controller.dart';
 
 class SettingsView extends GetView<SettingsController> {
@@ -52,7 +53,7 @@ class SettingsView extends GetView<SettingsController> {
               const Divider(),
               _buildSettingItem(
                 image: 'assets/icons/pencil_icon.png',
-                title: 'Sunting Tema',
+                title: 'Ganti Walpaper dan Musik',
                 onTap: () {
                   Get.toNamed(Routes.settingsTheme);
                 },
@@ -176,8 +177,28 @@ class SettingsView extends GetView<SettingsController> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () async {
+                      // Ambil instance SharedPreferences
+                      final prefs = await SharedPreferences.getInstance();
+                      final userController = Get.find<UserController>();
+
+                      // Ambil userId yang tersimpan di SharedPreferences
+                      final int? storedUserId = prefs.getInt('userId');
+                      final int? currentUserId = userController.userId.value;
+
+                      // Jika userId berbeda, ganti data SharedPreferences dengan data baru
+                      if (storedUserId != currentUserId) {
+                        await prefs.setInt(
+                            'userId', currentUserId ?? 0); // Simpan userId baru
+                        debugPrint(
+                            "SharedPreferences diperbarui dengan userId baru: $currentUserId");
+                      } else {
+                        // Jika userId sama, muat kembali data yang tersimpan
+                        debugPrint(
+                            "UserId sama, memuat kembali data SharedPreferences");
+                      }
+
                       // Panggil method logout dari UserController
-                      await Get.find<UserController>().logout();
+                      await userController.logout();
                       // Navigasi ke halaman login setelah logout
                       Get.offAllNamed(Routes.login);
                     },

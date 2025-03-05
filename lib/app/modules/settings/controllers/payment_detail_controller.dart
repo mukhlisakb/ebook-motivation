@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ebookapp/app/data/models/payment_mode.dart';  
 
 class PaymentController extends GetxController {  
+  final isExpanded = false.obs; 
   // State variables  
   var isLoading = false.obs;  
   var virtualAccountNumber = Rxn<String>();  
@@ -210,7 +211,7 @@ class PaymentController extends GetxController {
   // Load saved data from SharedPreferences  
   Future<void> loadSavedData() async {  
     final prefs = await SharedPreferences.getInstance();  
-    final savedUserId = prefs.getInt('userId');  
+    final savedUserId = prefs.getInt('userId');
 
     // Jika userId sesuai, muat data  
     if (savedUserId == userController.userId.value) {  
