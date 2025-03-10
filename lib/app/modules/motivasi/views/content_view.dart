@@ -1,6 +1,8 @@
+
 import 'dart:typed_data';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:ebookapp/app/modules/motivasi/controllers/audio_controller.dart';
+import 'package:ebookapp/app/modules/motivasi/controllers/live_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,10 +21,14 @@ class ContentView extends GetView<ContentController> {
     final Subcategory? subcategory = Get.arguments as Subcategory?;
 
     if (subcategory == null) {
-      return Scaffold(
+      return const Scaffold(
         body: Center(child: Text("Subcategory tidak ditemukan")),
       );
     }
+
+    // Inisialisasi Live Wallpaper Controller
+    final LiveWallpaperController liveWallpaperController = 
+        Get.put(LiveWallpaperController());
 
     // Inisialisasi Audio Controller dengan daftar track
     final AudioController audioController = Get.put(AudioController(
@@ -34,8 +40,70 @@ class ContentView extends GetView<ContentController> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _buildBody(
-          subcategory, themeController, userController, audioController),
+      body: Stack(
+        children: [
+          // Live Wallpaper
+          Obx(() => liveWallpaperController.isWallpaperVisible
+              ? Positioned.fill(
+                  child: Image.asset(
+                    liveWallpaperController.currentWallpaper,
+                    fit: BoxFit.cover,
+                    opacity: AlwaysStoppedAnimation(
+                      liveWallpaperController.wallpaperOpacity
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink()),
+
+          // Konten Utama
+          _buildBody(
+            subcategory, 
+            themeController, 
+            userController, 
+            audioController,
+            liveWallpaperController
+          ),
+
+          // Kontrol Wallpaper
+          Positioned(
+            top: 40,
+            right: 20,
+            child: Row(
+              children: [
+                // Tombol Visibility Wallpaper
+                Obx(() => IconButton(
+                  icon: Icon(
+                    liveWallpaperController.isWallpaperVisible 
+                      ? Icons.visibility 
+                      : Icons.visibility_off,
+                    color: Colors.white,
+                  ),
+                  onPressed: () => liveWallpaperController.toggleWallpaperVisibility(),
+                )),
+
+                // Slider Opacity
+                Obx(() => SizedBox(
+                  width: 100,
+                  child: Slider(
+                    value: liveWallpaperController.wallpaperOpacity,
+                    onChanged: (value) => liveWallpaperController.setWallpaperOpacity(value),
+                    min: 0.0,
+                    max: 1.0,
+                    activeColor: Colors.white,
+                    inactiveColor: Colors.white54,
+                  ),
+                )),
+
+                // Tombol Ganti Wallpaper
+                IconButton(
+                  icon: const Icon(Icons.switch_access_shortcut, color: Colors.white),
+                  onPressed: () => liveWallpaperController.nextWallpaper(),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -44,6 +112,7 @@ class ContentView extends GetView<ContentController> {
     ThemeController themeController,
     UserController userController,
     AudioController audioController,
+    LiveWallpaperController liveWallpaperController,
   ) {
     final slideCount = 0.obs;
     final PageController pageController = PageController(keepPage: true);
@@ -83,33 +152,37 @@ class ContentView extends GetView<ContentController> {
             }
 
             return LayoutBuilder(builder: (context, constraints) {
-              return Stack(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      // Toggle play/pause saat layar di tap
-                      audioController.togglePlayPause();
-                    },
-                    child: NotificationListener<ScrollNotification>(
-                      onNotification: (ScrollNotification scrollInfo) {
-                        if (scrollInfo.metrics.pixels ==
-                            scrollInfo.metrics.maxScrollExtent) {
-                          slideCount.value++;
-                          debugPrint("Slide count: ${slideCount.value}");
+              return GestureDetector(
+                onTap: () {
+                  // Toggle play/pause saat layar di tap
+                  audioController.togglePlayPause();
+                },
+                onLongPress: () {
+                  // Toggle wallpaper saat long press
+                  liveWallpaperController.toggleWallpaperVisibility();
+                },
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (ScrollNotification scrollInfo) {
+                    if (scrollInfo.metrics.pixels ==
+                        scrollInfo.metrics.maxScrollExtent) {
+                      slideCount.value++;
+                      debugPrint("Slide count: ${slideCount.value}");
 
-                          if (!userController.isPremium.value &&
-                              slideCount.value >= 2) {
-                            prefs.setBool('isScrollLimitReached', true);
-                            Future.microtask(
-                                () => Get.offNamed(Routes.ticketPremium));
-                          }
+                      if (!userController.isPremium.value &&
+                          slideCount.value >= 2) {
+                        prefs.setBool('isScrollLimitReached', true);
+                        Future.microtask(
+                            () => Get.offNamed(Routes.ticketPremium));
+                      }
 
-                          controller.fetchContents(
-                              subcategoryId: subcategory.id);
-                        }
-                        return true;
-                      },
-                      child: PageView.builder(
+                      controller.fetchContents(
+                          subcategoryId: subcategory.id);
+                    }
+                    return true;
+                  },
+                  child: Stack(
+                    children: [
+                      PageView.builder(
                         controller: pageController,
                         scrollDirection: Axis.vertical,
                         itemCount: userController.isPremium.value
@@ -134,48 +207,47 @@ class ContentView extends GetView<ContentController> {
                           return _buildPageItem(index, imageBytes);
                         },
                       ),
-                    ),
-                  ),
-                  // Motivational Text
-                  Positioned(
-                    bottom: 100,
-                    left: 20,
-                    right: 20,
-                    child: Text(
-                      "Discipline turns potential into reality.",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                      // Motivational Text
+                      Positioned(
+                        bottom: 100,
+                        left: 20,
+                        right: 20,
+                        child: Text(
+                          "Discipline turns potential into reality.",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  // Bottom Action Buttons
-                  Positioned(
-                    bottom: 20,
-                    left: 20,
-                    right: 20,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.share, color: Colors.white),
-                          onPressed: () {
-                            // Handle share action
-                          },
+                      // Bottom Action Buttons
+                      Positioned(
+                        bottom: 20,
+                        left: 20,
+                        right: 20,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.share, color: Colors.white),
+                              onPressed: () {
+                                // Handle share action
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.favorite_border, color: Colors.white),
+                              onPressed: () {
+                                // Handle like action
+                              },
+                            ),
+                          ],
                         ),
-                        IconButton(
-                          icon:
-                              Icon(Icons.favorite_border, color: Colors.white),
-                          onPressed: () {
-                            // Handle like action
-                          },
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               );
             });
           },
@@ -201,7 +273,7 @@ class ContentView extends GetView<ContentController> {
                   color: Colors.black.withOpacity(0.2),
                   spreadRadius: 2,
                   blurRadius: 5,
-                  offset: Offset(0, 3),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
@@ -218,7 +290,7 @@ class ContentView extends GetView<ContentController> {
           Positioned(
             bottom: -30, // Sesuaikan posisi nomor
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.6),
                 borderRadius: BorderRadius.circular(20),

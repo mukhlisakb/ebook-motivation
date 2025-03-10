@@ -84,6 +84,9 @@ flutter:
 
     # Audio
     - assets/audio/avenged.mp3
+
+    #GIF
+    - assets/gif/ocean-diver.gif
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
