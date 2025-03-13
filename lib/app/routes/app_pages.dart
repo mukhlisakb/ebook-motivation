@@ -61,10 +61,10 @@ class AppPages {
       page: () => SuccessRegister(),
       binding: RegisterBinding(),
     ),
-    GetPage(
-        name: _Paths.confirmPass,
-        page: () => SetPasswordView(),
-        binding: RegisterBinding()),
+    // GetPage(
+    //     name: _Paths.confirmPass,
+    //     page: () => SetPasswordView(),
+    //     binding: RegisterBinding()),
     GetPage(
       name: _Paths.motivasi, // Rute untuk Motivasi
       page: () => MotivasiView(),
