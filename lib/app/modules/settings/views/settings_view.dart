@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../controllers/settings_controller.dart';
 
 class SettingsView extends GetView<SettingsController> {
@@ -14,8 +15,7 @@ class SettingsView extends GetView<SettingsController> {
 
   @override
   Widget build(BuildContext context) {
-    // Pastikan UserController diinisialisasi
-    Get.put(UserController()); // Tambahkan ini jika belum ada di tempat lain
+    Get.put(UserController()); // Pastikan UserController dikelola di tempat ini
 
     final ThemeController themeController = Get.put(ThemeController());
     return Obx(
@@ -31,13 +31,13 @@ class SettingsView extends GetView<SettingsController> {
             ),
           ),
           centerTitle: true,
-          backgroundColor: themeController.currentColor, // Warna biru gelap
+          backgroundColor: themeController.currentColor,
         ),
         body: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
               image: AssetImage('assets/images/Watermark.png'),
-              fit: BoxFit.cover, // Mengatur gambar agar menutupi seluruh area
+              fit: BoxFit.cover,
             ),
           ),
           child: ListView(
@@ -53,7 +53,7 @@ class SettingsView extends GetView<SettingsController> {
               const Divider(),
               _buildSettingItem(
                 image: 'assets/icons/pencil_icon.png',
-                title: 'Ganti Walpaper dan Musik',
+                title: 'Ganti Wallpaper dan Musik',
                 onTap: () {
                   Get.toNamed(Routes.settingsTheme);
                 },
@@ -71,11 +71,44 @@ class SettingsView extends GetView<SettingsController> {
                 image: 'assets/icons/crown_icon.png',
                 title: 'Tingkatkan Akun',
                 onTap: () {
-                  // Ambil paymentStatus dari PaymentController
                   final paymentStatus =
                       Get.find<PaymentController>().paymentStatus.value;
-                  // Kirim paymentStatus sebagai argumen
                   Get.toNamed(Routes.upgradeAccount, arguments: paymentStatus);
+                },
+              ),
+              const Divider(),
+              _buildSettingItem(
+                image: 'assets/icons/message.png',
+                title: 'Pusat Bantuan',
+                onTap: () async {
+                  final Uri emailUri = Uri(
+                    scheme: 'mailto',
+                    path: 'sarielinurnirmala@gmail.com',
+                    queryParameters: {'subject': 'Permintaan Bantuan'},
+                  );
+
+                  try {
+                    print('Trying to launch: $emailUri'); // Debugging print
+
+                    // Memeriksa apakah dapat meluncurkan URL
+                    if (await canLaunchUrl(emailUri)) {
+                      await launchUrl(emailUri);
+                    } else {
+                      print('Could not launch: $emailUri'); // Debugging print
+                      Get.snackbar(
+                        'Gagal',
+                        'Tidak bisa membuka aplikasi email.',
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                    }
+                  } catch (e) {
+                    print('Error saat membuka email: $e'); // Debugging print
+                    Get.snackbar(
+                      'Kesalahan',
+                      'Terjadi kesalahan saat membuka email. Coba lagi nanti.',
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  }
                 },
               ),
               const Divider(),
@@ -177,29 +210,22 @@ class SettingsView extends GetView<SettingsController> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () async {
-                      // Ambil instance SharedPreferences
                       final prefs = await SharedPreferences.getInstance();
                       final userController = Get.find<UserController>();
 
-                      // Ambil userId yang tersimpan di SharedPreferences
                       final int? storedUserId = prefs.getInt('userId');
                       final int? currentUserId = userController.userId.value;
 
-                      // Jika userId berbeda, ganti data SharedPreferences dengan data baru
                       if (storedUserId != currentUserId) {
-                        await prefs.setInt(
-                            'userId', currentUserId ?? 0); // Simpan userId baru
+                        await prefs.setInt('userId', currentUserId ?? 0);
                         debugPrint(
                             "SharedPreferences diperbarui dengan userId baru: $currentUserId");
                       } else {
-                        // Jika userId sama, muat kembali data yang tersimpan
                         debugPrint(
                             "UserId sama, memuat kembali data SharedPreferences");
                       }
 
-                      // Panggil method logout dari UserController
                       await userController.logout();
-                      // Navigasi ke halaman login setelah logout
                       Get.offAllNamed(Routes.login);
                     },
                     child: Text(

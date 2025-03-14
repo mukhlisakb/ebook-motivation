@@ -441,102 +441,109 @@ class RegisterPage extends GetView<RegisterController> {
 
   // Step Job
   Widget _buildJobStep() {
-    final jobTitles = [
-      'Pelajar',
-      'Mahasiswa',
-      'Pegawai Negeri (ASN)',
-      'Pegawai Swasta/Karyawan Swasta',
-      'Profesional/ Ahli',
-      'Ibu Rumah Tangga',
-      'Wiraswasta/Pengusaha',
-      'Tidak Bekerja',
-      'Lain-lain'
-    ];
+    final Map<String, String> jobType = {
+      '0': 'Lainnya',
+      '1': 'Pelajar',
+      '2': 'Mahasiswa',
+      '3': 'Pegawai Negeri (ASN)',
+      '4': 'Pegawai Swasta/Karyawan Swasta',
+      '5': 'Profesional/Ahli',
+      '6': 'Ibu Rumah Tangga',
+      '7': 'Wiraswasta/Pengusaha',
+      '8': 'Tidak Bekerja',
+    };
 
-    return _buildScrollableColumn(child: [
-      Text(
-        'Hampir selesai!',
-        style: GoogleFonts.leagueSpartan(
-            fontSize: 28, fontWeight: FontWeight.bold),
-      ),
-      Text.rich(
-        TextSpan(
-          text: 'Boleh tahu ',
+    return _buildScrollableColumn(
+      child: [
+        Text(
+          'Hampir selesai!',
           style: GoogleFonts.leagueSpartan(
-            fontSize: 14,
-            fontWeight: FontWeight.normal,
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
           ),
-          children: [
-            TextSpan(
-              text: 'apa pekerjaanmu saat ini?',
-              style: GoogleFonts.leagueSpartan(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
         ),
-      ),
-      SizedBox(height: 20),
-      Obx(() => Column(
-            children: jobTitles.asMap().entries.map((entry) {
-              final index = entry.key;
-              final title = entry.value;
-              return GestureDetector(
-                onTap: () {
-                  controller.selectedJobType.value =
-                      index + 1; // Update selected job type
-                },
-                child: Container(
-                  width: 400,
-                  margin: EdgeInsets.only(bottom: 10), // Space between options
-                  padding: EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: controller.selectedJobType.value == index + 1
-                        ? colorBackground
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: controller.selectedJobType.value == index + 1
-                          ? colorBackground
-                          : Colors.black,
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      color: controller.selectedJobType.value == index + 1
-                          ? Colors.white
-                          : Colors.black,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          )),
-      Obx(() => controller.selectedJobType.value ==
-              9 // Assuming 'Lain-lain' has the index 9
-          ? TextField(
-              controller: controller.customJobController,
-              decoration: InputDecoration(
-                labelText: 'Tuliskan Pekerjaan Lain',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide(color: Colors.grey, width: 1.5),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide(color: colorBackground, width: 2),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide(color: Colors.grey, width: 1.5),
+        Text.rich(
+          TextSpan(
+            text: 'Boleh tahu ',
+            style: GoogleFonts.leagueSpartan(
+              fontSize: 14,
+              fontWeight: FontWeight.normal,
+            ),
+            children: [
+              TextSpan(
+                text: 'apa pekerjaanmu saat ini?',
+                style: GoogleFonts.leagueSpartan(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            )
-          : SizedBox.shrink()),
-    ]);
+            ],
+          ),
+        ),
+        SizedBox(height: 20),
+        Obx(() => Column(
+              children: jobType.entries.map((entry) {
+                final key = entry.key; // key (String)
+                final title = entry.value; // value (job title)
+                return GestureDetector(
+                  onTap: () {
+                    controller.selectedJobType.value =
+                        int.parse(key); // Update selected job type
+                  },
+                  child: Container(
+                    width: 400,
+                    margin:
+                        EdgeInsets.only(bottom: 10), // Space between options
+                    padding: EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: controller.selectedJobType.value == int.parse(key)
+                          ? colorBackground
+                          : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color:
+                            controller.selectedJobType.value == int.parse(key)
+                                ? colorBackground
+                                : Colors.black,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        color:
+                            controller.selectedJobType.value == int.parse(key)
+                                ? Colors.white
+                                : Colors.black,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            )),
+        Obx(() => controller.selectedJobType.value ==
+                0 // Assuming 'Lain lainnya' has the index 0
+            ? TextField(
+                controller: controller.customJobController,
+                decoration: InputDecoration(
+                  labelText: 'Tuliskan Pekerjaan Lain',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(color: colorBackground, width: 2),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(color: Colors.grey, width: 1.5),
+                  ),
+                ),
+              )
+            : SizedBox.shrink()),
+      ],
+    );
   }
 
   // Step Password

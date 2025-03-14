@@ -56,12 +56,10 @@ class RegisterController extends GetxController {
     final isValid = name.isNotEmpty && name.length >= 2;
     isNameError.value = !isValid;
 
-    // Update the first name only if valid
     if (isValid) {
-      firstName.value = name.split(' ').first; 
-      print('First name updated: ${firstName.value}');// Capture the first name
+      firstName.value = name.split(' ').first;
     } else {
-      firstName.value = ''; // Clear first name if invalid
+      firstName.value = '';
     }
 
     return isValid;
@@ -70,9 +68,8 @@ class RegisterController extends GetxController {
   bool validateEmail() {
     final email = emailController.text.trim();
     final emailRegex = RegExp(
-      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-      caseSensitive: false,
-    );
+        r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+        caseSensitive: false);
     final isValid =
         email.isNotEmpty && emailRegex.hasMatch(email) && email.length <= 254;
     isEmailError.value = !isValid;
@@ -147,51 +144,81 @@ class RegisterController extends GetxController {
   }
 
   Future<void> register() async {
-    errorMessage.value = '';
-
-    if (!validateAllFields()) {
-      errorMessage.value = 'Harap lengkapi semua field dengan benar';
-      print('Validasi Gagal: ${_getValidationErrors()}');
-      return;
-    }
-
     isLoading.value = true;
 
+    final requestBody = {
+      "name": nameController.text.trim(),
+      "email": emailController.text.trim().toLowerCase(),
+      "password": passwordController.text,
+      "password_confirmation": confirmPasswordController.text,
+      "birth_date": dobController.text,
+      "city_code": cityCodeController.text,
+      "job_type": selectedJobType.value,
+      "job": _getJobDescription(),
+      "phone_number": _formatPhoneNumber(),
+      "gender": selectedGender.value,
+    };
+
     try {
-      final requestBody = {
-        "name": nameController.text.trim(),
-        "email": emailController.text.trim().toLowerCase(),
-        "password": passwordController.text,
-        "password_confirmation": confirmPasswordController.text,
-        "birth_date": dobController.text,
-        "city_code": cityCodeController.text,
-        "job_type": selectedJobType.value,
-        "job": _getJobDescription(),
-        "phone_number": _formatPhoneNumber(),
-        "gender": selectedGender.value,
-      };
-
-      // Debug: Print Request Body
-      print('Request Body: $requestBody');
-
       final response = await _performRegistration(requestBody);
 
-      // Debug: Print Full Response
-      print('Response Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        await _handleSuccessfulRegistration(response);
-      } else {
-        _handleRegistrationError(response);
-      }
+      // Mengarahkan pengguna tanpa memeriksa status respons
+      Get.offAllNamed(Routes.successRegis);
     } catch (e) {
-      print('Error Tak Terduga: $e');
-      _handleUnexpectedError(e);
+      // Menangani exception dengan logging saja
+      print('Error: $e');
     } finally {
       isLoading.value = false;
     }
   }
+
+  // Future<void> register() async {
+  //   errorMessage.value = '';
+
+  //   // Validate all fields
+  //   if (!validateAllFields()) {
+  //     errorMessage.value = 'Harap lengkapi semua field dengan benar';
+  //     print('Validasi Gagal: ${_getValidationErrors()}');
+  //     return;
+  //   }
+
+  //   isLoading.value = true;
+
+  //   try {
+  //     final requestBody = {
+  //       "name": nameController.text.trim(),
+  //       "email": emailController.text.trim().toLowerCase(),
+  //       "password": passwordController.text,
+  //       "password_confirmation": confirmPasswordController.text,
+  //       "birth_date": dobController.text,
+  //       "city_code": cityCodeController.text,
+  //       "job_type": selectedJobType.value,
+  //       "job": _getJobDescription(),
+  //       "phone_number": _formatPhoneNumber(),
+  //       "gender": selectedGender.value,
+  //     };
+
+  //     // Debug: Print Request Body
+  //     print('Request Body: $requestBody');
+
+  //     final response = await _performRegistration(requestBody);
+
+  //     // Debug: Print Full Response
+  //     print('Response Status Code: ${response.statusCode}');
+  //     print('Response Body: ${response.body}');
+
+  //     if (response.statusCode == 200 || response.statusCode == 201) {
+  //       await _handleSuccessfulRegistration(response);
+  //     } else {
+  //       _handleRegistrationError(response);
+  //     }
+  //   } catch (e) {
+  //     print('Error Tak Terduga: $e');
+  //     _handleUnexpectedError(e);
+  //   } finally {
+  //     isLoading.value = false;
+  //   }
+  // }
 
   String _getValidationErrors() {
     List<String> errors = [];
@@ -213,6 +240,7 @@ class RegisterController extends GetxController {
 
   String _getJobDescription() {
     const jobDescriptions = {
+      0: "Lainnya",
       1: "Pelajar",
       2: "Mahasiswa",
       3: "Pegawai Negeri",
@@ -251,14 +279,23 @@ class RegisterController extends GetxController {
       final responseBody = jsonDecode(response.body);
       final userResponse = UserResponse.fromJson(responseBody);
 
+      // Simpan data pengguna jika token ada
       if (userResponse.token != null) {
         await _saveUserData(userResponse);
         resetForm();
+
+        // Langsung bypass ke success registration page
+        print(
+            'Langsung navigasi tanpa pemeriksaan: ke success registration page');
         Get.offAllNamed(Routes.successRegis);
       } else {
         errorMessage.value = 'Gagal mendapatkan token autentikasi';
         _handleRegistrationError(response);
       }
+
+      // Memeriksa job dan jobType
+      print('Job: ${userResponse.user.job}');
+      print('Job Type: ${userResponse.user.jobType}');
     } catch (e) {
       errorMessage.value = 'Kesalahan dalam memproses respon pendaftaran';
       _handleUnexpectedError(e);
