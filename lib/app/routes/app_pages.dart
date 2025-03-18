@@ -32,6 +32,8 @@ import '../modules/splash_screen/bindings/splash_screen_binding.dart';
 import '../modules/splash_screen/views/splash_screen_view.dart';
 import '../modules/ticket_premium/bindings/ticket_premium_binding.dart';
 import '../modules/ticket_premium/views/ticket_premium_view.dart';
+import '../modules/wallpaper_music/bindings/wallpaper_music_binding.dart';
+import '../modules/wallpaper_music/views/wallpaper_music_view.dart';
 
 part 'app_routes.dart';
 
@@ -147,6 +149,11 @@ class AppPages {
       name: _Paths.splashScreen,
       page: () => const SplashScreenView(),
       binding: SplashScreenBinding(),
+    ),
+    GetPage(
+      name: _Paths.wallpaperMusic,
+      page: () => WallpaperMusicView(),
+      binding: WallpaperMusicBinding(),
     ),
   ];
 }

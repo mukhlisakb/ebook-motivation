@@ -47,6 +47,7 @@ dependencies:
   shared_preferences: ^2.4.0
   smooth_page_indicator: ^1.2.1
   url_launcher: ^6.3.1
+  video_player: ^2.9.3
   webp: ^1.0.0+1
 
 dev_dependencies:
@@ -90,6 +91,19 @@ flutter:
 
     #GIF
     - assets/gif/ocean-diver.gif
+
+    #Video
+    - assets/videos/Wallpaper01.mp4
+    - assets/videos/Wallpaper02.mp4
+    - assets/videos/Wallpaper03.mp4
+    - assets/videos/Wallpaper04.mp4
+    - assets/videos/Wallpaper05.mp4
+
+    #Pitcure
+    - assets/pictures/Wallpaper_img_01.jpg
+    - assets/pictures/Wallpaper_img_02.jpg
+    - assets/pictures/Wallpaper_img_03.jpg
+    - assets/pictures/Wallpaper_img_04.jpg
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

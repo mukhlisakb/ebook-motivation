@@ -19,7 +19,7 @@ class ContentBinding extends Bindings {
       () => UserController(),
     );
     Get.lazyPut<AudioController>(() => AudioController(
-        initialAudioSourcePath: 'avenged.mp3', audioTracks: []));
+        initialAudioSourcePath: 'avenged.mp3'));
     Get.lazyPut<LiveWallpaperController>(
       () => LiveWallpaperController(),
     );

@@ -27,6 +27,7 @@ abstract class Routes {
       .motivationDetailPage; // Menambahkan rute untuk halaman detail motivasi
   static const ticketPremium = _Paths.ticketPremium;
   static const splashScreen = _Paths.splashScreen;
+  static const wallpaperMusic = _Paths.wallpaperMusic;
 }
 
 abstract class _Paths {
@@ -56,4 +57,5 @@ abstract class _Paths {
       '/motivation-detail-page'; // Menambahkan path untuk halaman detail motivasi
   static const ticketPremium = '/ticket-premium';
   static const splashScreen = '/splash-screen';
+  static const wallpaperMusic = '/wallpaper-music';
 }

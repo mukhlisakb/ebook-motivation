@@ -1,21 +1,32 @@
-import 'package:ebookapp/app/modules/settings/controllers/payment_detail_controller.dart';
-import 'package:ebookapp/app/modules/settings/controllers/setting_theme_controller.dart';
-import 'package:ebookapp/app/modules/settings/controllers/user_controller.dart';
-import 'package:ebookapp/app/routes/app_pages.dart';
-import 'package:ebookapp/core/constants/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../controllers/settings_controller.dart';
+
+// Import Controllers
+import 'package:ebookapp/app/modules/settings/controllers/payment_detail_controller.dart';
+import 'package:ebookapp/app/modules/settings/controllers/setting_theme_controller.dart';
+import 'package:ebookapp/app/modules/settings/controllers/user_controller.dart';
+import 'package:ebookapp/app/modules/settings/controllers/settings_controller.dart';
+
+// Import Routes
+import 'package:ebookapp/app/routes/app_pages.dart';
 
 class SettingsView extends GetView<SettingsController> {
-  const SettingsView({super.key});
+  const SettingsView({Key? key}) : super(key: key);
+
+  // Method untuk encode query parameters email
+  String? _encodeQueryParameters(Map<String, String> params) {
+    return params.entries
+        .map((MapEntry<String, String> e) =>
+            '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
+        .join('&');
+  }
 
   @override
   Widget build(BuildContext context) {
-    Get.put(UserController()); // Pastikan UserController dikelola di tempat ini
+    Get.put(UserController()); // Pastikan UserController dikelola
 
     final ThemeController themeController = Get.put(ThemeController());
     return Obx(
@@ -55,7 +66,7 @@ class SettingsView extends GetView<SettingsController> {
                 image: 'assets/icons/pencil_icon.png',
                 title: 'Ganti Wallpaper dan Musik',
                 onTap: () {
-                  Get.toNamed(Routes.settingsTheme);
+                  Get.toNamed(Routes.wallpaperMusic);
                 },
               ),
               const Divider(),
@@ -81,32 +92,46 @@ class SettingsView extends GetView<SettingsController> {
                 image: 'assets/icons/message.png',
                 title: 'Pusat Bantuan',
                 onTap: () async {
-                  final Uri emailUri = Uri(
+                  // URI untuk email
+                  final Uri emailLaunchUri = Uri(
                     scheme: 'mailto',
                     path: 'sarielinurnirmala@gmail.com',
-                    queryParameters: {'subject': 'Permintaan Bantuan'},
+                    query: _encodeQueryParameters(<String, String>{
+                      'subject': 'Permintaan Bantuan Aplikasi',
+                      'body': 'Halo Tim Support,\n\n'
+                          'Saya ingin mengajukan pertanyaan/bantuan mengenai:\n'
+                          'Aplikasi: [Nama Aplikasi]\n'
+                          'Versi Aplikasi: [Versi]\n'
+                          'Perangkat: [Merk dan Model]\n\n'
+                          'Deskripsi Masalah:\n'
+                    }),
                   );
 
                   try {
-                    print('Trying to launch: $emailUri'); // Debugging print
-
-                    // Memeriksa apakah dapat meluncurkan URL
-                    if (await canLaunchUrl(emailUri)) {
-                      await launchUrl(emailUri);
+                    // Langsung launch URL email
+                    if (await canLaunchUrl(emailLaunchUri)) {
+                      await launchUrl(emailLaunchUri,
+                          mode: LaunchMode
+                              .externalApplication // Membuka di aplikasi eksternal
+                          );
                     } else {
-                      print('Could not launch: $emailUri'); // Debugging print
+                      // Fallback jika tidak bisa membuka email
                       Get.snackbar(
-                        'Gagal',
-                        'Tidak bisa membuka aplikasi email.',
+                        'Kesalahan',
+                        'Tidak dapat membuka aplikasi email',
                         snackPosition: SnackPosition.BOTTOM,
+                        backgroundColor: Colors.red,
+                        colorText: Colors.white,
                       );
                     }
                   } catch (e) {
-                    print('Error saat membuka email: $e'); // Debugging print
+                    // Tangani error
                     Get.snackbar(
                       'Kesalahan',
-                      'Terjadi kesalahan saat membuka email. Coba lagi nanti.',
+                      'Terjadi masalah saat membuka email: $e',
                       snackPosition: SnackPosition.BOTTOM,
+                      backgroundColor: Colors.red,
+                      colorText: Colors.white,
                     );
                   }
                 },
@@ -154,7 +179,9 @@ class SettingsView extends GetView<SettingsController> {
       title: Text(
         title,
         style: GoogleFonts.leagueSpartan(
-            fontSize: 20, fontWeight: FontWeight.w600),
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       onTap: onTap,
     );
@@ -231,7 +258,9 @@ class SettingsView extends GetView<SettingsController> {
                     child: Text(
                       'Keluar',
                       style: GoogleFonts.leagueSpartan(
-                          fontSize: 15, color: Colors.white),
+                        fontSize: 15,
+                        color: Colors.white,
+                      ),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE33535),
