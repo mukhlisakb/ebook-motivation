@@ -64,3 +64,47 @@ BoxDecoration containerBoxDecoration(
     boxShadow: boxShadow,
   );
 }
+
+
+// Paths Assets  
+class AssetPaths {  
+  static const String audioFolder = 'assets/audio/';  
+  static const String videoFolder = 'assets/videos/';  
+  static const String pictureFolder = 'assets/pictures/';  
+
+  // Daftar Musik  
+  static const List<String> musicTracks = [  
+    '${audioFolder}PenyejukHati1.mp3',  
+    '${audioFolder}PenyejukHati2.mp3',  
+    '${audioFolder}PenyejukHati3.mp3',  
+    '${audioFolder}PenyejukHati4.mp3',  
+    '${audioFolder}PenyejukHati5.mp3',  
+    '${audioFolder}PenyejukHati6.mp3', 
+    '${audioFolder}PenyejukHati7.mp3', 
+    '${audioFolder}PenyejukHati8.mp3', 
+    '${audioFolder}PenyejukHati9.mp3',
+    '${audioFolder}PenyejukHati10.mp3'
+  ];  
+
+  // Daftar Wallpaper  
+  static const List<String> wallpapers = [  
+    '${videoFolder}Wallpaper01.mp4',  
+    '${videoFolder}Wallpaper02.mp4', 
+    '${videoFolder}Wallpaper03.mp4',
+    '${videoFolder}Wallpaper04.mp4',
+    '${videoFolder}Wallpaper05.mp4', 
+    '${videoFolder}Wallpaper06.mp4', 
+    '${videoFolder}Wallpaper07.mp4', 
+    '${videoFolder}Wallpaper08.mp4', 
+    '${videoFolder}Wallpaper09.mp4', 
+    '${pictureFolder}Wallpaper_img_01.jpg',  
+    '${pictureFolder}Wallpaper_img_02.jpg',  
+    '${pictureFolder}Wallpaper_img_03.jpg',
+    '${pictureFolder}Wallpaper_img_04.jpg',
+    '${pictureFolder}Wallpaper_img_05.jpg',
+    '${pictureFolder}Wallpaper_img_06.jpg',
+    '${pictureFolder}Wallpaper_img_07.jpg',
+    '${pictureFolder}Wallpaper_img_08.jpg',
+    '${pictureFolder}Wallpaper_img_09.jpg',
+  ];  
+}  
