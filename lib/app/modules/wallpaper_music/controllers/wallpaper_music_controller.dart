@@ -187,7 +187,7 @@ class WallpaperMusicController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadSelections(); // Pastikan untuk memuat pilihan saat inisialisasi
+    loadSelections(); // Memuat pilihan saat inisialisasi
     _initializeServices();
   }
 
@@ -195,89 +195,43 @@ class WallpaperMusicController extends GetxController {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedWallpaper', selectedWallpaper.value);
     await prefs.setString('selectedMusic', selectedMusic.value);
-
-    // Debug: Print setelah berhasil menyimpan
-    debugPrint('Selected Wallpaper: ${selectedWallpaper.value}');
-    debugPrint('Selected Music: ${selectedMusic.value}');
   }
 
   void loadSelections() async {
     final prefs = await SharedPreferences.getInstance();
     selectedWallpaper.value = prefs.getString('selectedWallpaper') ?? '';
     selectedMusic.value = prefs.getString('selectedMusic') ?? '';
-
-    // Debug: Print setelah memuat pilihan
-    debugPrint('Loaded Wallpaper: ${selectedWallpaper.value}');
-    debugPrint('Loaded Music: ${selectedMusic.value}');
   }
 
   Future<void> _initializeServices() async {
     try {
-      // Inisialisasi Audio Player
       audioPlayer.onPlayerStateChanged.listen(_handleAudioStateChange);
-      // Inisialisasi video dan image controllers
-      await _initializeWallpapers();
+      // Inisialisasi video berdasarkan wallpaper yang dipilih
+      if (selectedWallpaper.value.isNotEmpty) {
+        await _initializeAndPlayVideo(selectedWallpaper.value);
+      }
     } catch (e) {
       _handleInitializationError(e);
     }
   }
 
-  Future<void> _initializeWallpapers() async {
-    try {
-      wallpaperStatus.value = WallpaperStatus.loading;
-      errorMessage.value = '';
-
-      // Pisahkan video dan image wallpapers
-      final videoList =
-          AssetPaths.wallpapers.where((w) => w.endsWith('.mp4')).toList();
-
-      final imageList = AssetPaths.wallpapers
-          .where((w) => w.endsWith('.jpg') || w.endsWith('.png'))
-          .toList();
-
-      // Inisialisasi video wallpapers
-      for (var videoPath in videoList) {
-        await _validateAndInitializeVideo(videoPath);
-      }
-
-      wallpaperStatus.value = WallpaperStatus.loaded;
-    } catch (e) {
-      wallpaperStatus.value = WallpaperStatus.error;
-      _handleInitializationError(e);
+  Future<void> _initializeAndPlayVideo(String wallpaper) async {
+    // Hentikan semua video yang ada sebelumnya
+    for (var controller in videoControllers.values) {
+      controller.pause();
+      controller.dispose();
     }
-  }
+    videoControllers.clear(); // Kosongkan daftar video controllers
 
-  Future<void> _validateAndInitializeVideo(String videoPath) async {
-    try {
-      debugPrint('Mencoba memuat video: $videoPath');
+    if (wallpaper.endsWith('.mp4')) {
+      final videoController = VideoPlayerController.asset(wallpaper);
+      await videoController.initialize();
+      videoController.setLooping(true);
+      videoController.play();
+      videoControllers[wallpaper] = videoController;
 
-      final byteData = await rootBundle.load(videoPath);
-      if (byteData.lengthInBytes == 0) {
-        debugPrint('Video asset kosong: $videoPath');
-        return;
-      }
-
-      // Buat file sementara dari asset
-      final file = await _saveTemporaryVideo(videoPath, byteData);
-
-      final controller = VideoPlayerController.file(file);
-      await controller.initialize();
-      controller.setLooping(true);
-      controller.setVolume(0.0);
-      videoControllers[videoPath] = controller;
-
-      debugPrint('Video berhasil dimuat: $videoPath');
-    } catch (e) {
-      debugPrint('Error inisialisasi video: $videoPath - $e');
+      debugPrint('Video berhasil dimuat: $wallpaper');
     }
-  }
-
-  Future<File> _saveTemporaryVideo(String videoPath, ByteData byteData) async {
-    final file = File(
-        '${(await getTemporaryDirectory()).path}/${videoPath.split('/').last}');
-    await file.create(recursive: true);
-    await file.writeAsBytes(byteData.buffer.asUint8List());
-    return file;
   }
 
   void selectWallpaper(String wallpaper) {
@@ -287,10 +241,11 @@ class WallpaperMusicController extends GetxController {
     }
 
     selectedWallpaper.value = wallpaper;
-    saveSelections(); // Simpan pilihan wallpaper
-    debugPrint(
-        'Dua Wallpaper yang dipilih: ${selectedWallpaper.value}'); // Debug
+    _initializeAndPlayVideo(
+        wallpaper); // Inisialisasi dan mainkan wallpaper yang dipilih
 
+    saveSelections(); // Simpan pilihan wallpaper
+    debugPrint('Wallpaper yang dipilih: ${selectedWallpaper.value}'); // Debug
     update();
   }
 
@@ -298,14 +253,12 @@ class WallpaperMusicController extends GetxController {
     try {
       musicStatus.value = WallpaperStatus.loading;
 
-      // Validasi keberadaan musik
       final byteData = await rootBundle.load(musicTrack);
       if (byteData.lengthInBytes == 0) {
         debugPrint('Music asset kosong: $musicTrack');
         return;
       }
 
-      // Jika musik yang dipilih sama dengan yang sudah diputar, lakukan pause
       if (selectedMusic.value == musicTrack) {
         if (audioPlayer.state == PlayerState.playing) {
           await audioPlayer.pause();
@@ -314,14 +267,13 @@ class WallpaperMusicController extends GetxController {
               .play(AssetSource(musicTrack.replaceFirst('assets/', '')));
         }
       } else {
-        // Hentikan musik yang sedang diputar
         await audioPlayer.stop();
         await audioPlayer.play(
           AssetSource(musicTrack.replaceFirst('assets/', '')),
         );
         selectedMusic.value = musicTrack;
         saveSelections(); // Simpan pilihan musik
-        debugPrint('Dua musik yang dipilih: ${selectedMusic.value}'); // Debug
+        debugPrint('Musik yang dipilih: ${selectedMusic.value}'); // Debug
       }
 
       musicStatus.value = WallpaperStatus.loaded;
