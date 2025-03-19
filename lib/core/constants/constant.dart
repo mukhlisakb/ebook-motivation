@@ -65,46 +65,45 @@ BoxDecoration containerBoxDecoration(
   );
 }
 
+// Paths Assets
+class AssetPaths {
+  static const String audioFolder = 'assets/audio/';
+  static const String videoFolder = 'assets/videos/';
+  static const String pictureFolder = 'assets/pictures/';
 
-// Paths Assets  
-class AssetPaths {  
-  static const String audioFolder = 'assets/audio/';  
-  static const String videoFolder = 'assets/videos/';  
-  static const String pictureFolder = 'assets/pictures/';  
+  // Daftar Musik
+  static const List<String> musicTracks = [
+    'assets/audio/PenyejukHati1.mp3',
+    'assets/audio/PenyejukHati2.mp3',
+    'assets/audio/PenyejukHati3.mp3',
+    'assets/audio/PenyejukHati4.mp3',
+    'assets/audio/PenyejukHati5.mp3',
+    'assets/audio/PenyejukHati6.mp3',
+    'assets/audio/PenyejukHati7.mp3',
+    'assets/audio/PenyejukHati8.mp3',
+    'assets/audio/PenyejukHati9.mp3',
+    'assets/audio/PenyejukHati10.mp3'
+  ];
 
-  // Daftar Musik  
-  static const List<String> musicTracks = [  
-    '${audioFolder}PenyejukHati1.mp3',  
-    '${audioFolder}PenyejukHati2.mp3',  
-    '${audioFolder}PenyejukHati3.mp3',  
-    '${audioFolder}PenyejukHati4.mp3',  
-    '${audioFolder}PenyejukHati5.mp3',  
-    '${audioFolder}PenyejukHati6.mp3', 
-    '${audioFolder}PenyejukHati7.mp3', 
-    '${audioFolder}PenyejukHati8.mp3', 
-    '${audioFolder}PenyejukHati9.mp3',
-    '${audioFolder}PenyejukHati10.mp3'
-  ];  
-
-  // Daftar Wallpaper  
-  static const List<String> wallpapers = [  
-    '${videoFolder}Wallpaper01.mp4',  
-    '${videoFolder}Wallpaper02.mp4', 
-    '${videoFolder}Wallpaper03.mp4',
-    '${videoFolder}Wallpaper04.mp4',
-    '${videoFolder}Wallpaper05.mp4', 
-    '${videoFolder}Wallpaper06.mp4', 
-    '${videoFolder}Wallpaper07.mp4', 
-    '${videoFolder}Wallpaper08.mp4', 
-    '${videoFolder}Wallpaper09.mp4', 
-    '${pictureFolder}Wallpaper_img_01.jpg',  
-    '${pictureFolder}Wallpaper_img_02.jpg',  
-    '${pictureFolder}Wallpaper_img_03.jpg',
-    '${pictureFolder}Wallpaper_img_04.jpg',
-    '${pictureFolder}Wallpaper_img_05.jpg',
-    '${pictureFolder}Wallpaper_img_06.jpg',
-    '${pictureFolder}Wallpaper_img_07.jpg',
-    '${pictureFolder}Wallpaper_img_08.jpg',
-    '${pictureFolder}Wallpaper_img_09.jpg',
-  ];  
-}  
+  // Daftar Wallpaper
+  static const List<String> wallpapers = [
+    'assets/videos/Wallpaper01.mp4',
+    'assets/videos/Wallpaper02.mp4',
+    'assets/videos/Wallpaper03.mp4',
+    'assets/videos/Wallpaper04.mp4',
+    'assets/videos/Wallpaper05.mp4',
+    'assets/videos/Wallpaper06.mp4',
+    'assets/videos/Wallpaper07.mp4',
+    'assets/videos/Wallpaper08.mp4',
+    'assets/videos/Wallpaper09.mp4',
+    'assets/pictures/Wallpaper_img_01.jpg',
+    'assets/pictures/Wallpaper_img_02.jpg',
+    'assets/pictures/Wallpaper_img_03.jpg',
+    'assets/pictures/Wallpaper_img_04.jpg',
+    'assets/pictures/Wallpaper_img_05.jpg',
+    'assets/pictures/Wallpaper_img_06.jpg',
+    'assets/pictures/Wallpaper_img_07.jpg',
+    'assets/pictures/Wallpaper_img_08.jpg',
+    'assets/pictures/Wallpaper_img_09.jpg',
+  ];
+}
