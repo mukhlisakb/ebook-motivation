@@ -152,7 +152,8 @@ import 'dart:convert';
 import 'dart:typed_data';  
 import 'package:ebookapp/app/data/models/content_model.dart';  
 import 'package:ebookapp/app/data/models/cursor_pagination_model.dart';  
-import 'package:ebookapp/app/data/models/motivasi_model.dart';  
+import 'package:ebookapp/app/data/models/motivasi_model.dart';
+import 'package:ebookapp/app/modules/motivasi/controllers/live_controller.dart';  
 import 'package:flutter/foundation.dart' show kDebugMode;  
 import 'package:flutter/material.dart';  
 import 'package:get/get.dart';  
@@ -165,6 +166,9 @@ class ContentController extends GetxController {
   var imageBytesList = <Rx<Uint8List?>>[].obs;  
   var isLoading = false.obs;  
   var nextCursor = RxnString();  
+
+  final LiveWallpaperController liveWallpaperController =   
+      Get.find<LiveWallpaperController>();  
 
   @override  
   void onClose() {  

@@ -152,170 +152,224 @@
 //   }
 // }
 
+import 'dart:io';
 import 'package:ebookapp/app/modules/wallpaper_music/controllers/wallpaper_music_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
+import 'package:ebookapp/core/constants/constant.dart'; // Import AssetPaths
 
 class LiveWallpaperController extends GetxController {
+  // Controller untuk wallpaper dan musik
   final WallpaperMusicController wallpaperMusicController =
       Get.find<WallpaperMusicController>();
 
-  // Visibilitas wallpaper
-  final RxBool _isWallpaperVisible = true.obs;
+  // Observable untuk wallpaper saat ini
+  final Rx<VideoPlayerController?> _videoController =
+      Rx<VideoPlayerController?>(null);
+  final RxDouble _wallpaperOpacity = RxDouble(0.5);
+  final RxBool _isWallpaperVisible = RxBool(true);
 
-  // Opacity wallpaper
-  final RxDouble _wallpaperOpacity = 0.5.obs;
+  // Getter
+  String get currentWallpaper =>
+      wallpaperMusicController.selectedWallpaper.value.isNotEmpty
+          ? wallpaperMusicController.selectedWallpaper.value
+          : AssetPaths.wallpapers.first;
 
-  // Daftar wallpaper default
-  final RxList<String> _defaultWallpapers = [
-    'assets/gif/ocean-diver.gif',
-    'assets/gif/mountain-landscape.gif',
-    'assets/gif/space-animation.gif',
-    'assets/videos/Wallpaper01.mp4', // Pastikan path video benar
-  ].obs;
-
-  // Daftar wallpaper kustom
-  final RxList<String> _customWallpapers = <String>[].obs;
-
-  // Index wallpaper saat ini
-  final RxInt _currentWallpaperIndex = 0.obs;
-
-  // Video controller untuk wallpaper video
-  VideoPlayerController? _videoController;
-
-  // Getter untuk visibilitas wallpaper
   bool get isWallpaperVisible => _isWallpaperVisible.value;
-
-  // Getter untuk opacity wallpaper
   double get wallpaperOpacity => _wallpaperOpacity.value;
-
-  // Getter untuk wallpaper saat ini dengan fallback
-  String get currentWallpaper {
-    final selectedWallpaper = wallpaperMusicController.selectedWallpaper.value;
-
-    if (selectedWallpaper.isNotEmpty) {
-      return selectedWallpaper;
-    }
-
-    final combinedWallpapers = [..._defaultWallpapers, ..._customWallpapers];
-    if (combinedWallpapers.isEmpty) {
-      return 'assets/gif/ocean-diver.gif'; // Fallback terakhir
-    }
-
-    return combinedWallpapers[
-        _currentWallpaperIndex.value % combinedWallpapers.length];
-  }
 
   @override
   void onInit() {
     super.onInit();
-    // Tambahkan listener untuk perubahan wallpaper di WallpaperMusicController
-    ever(wallpaperMusicController.selectedWallpaper, (wallpaper) {
-      _initializeVideoIfNeeded(); // Inisialisasi video hanya jika wallpaper diubah
-      update(); // Trigger rebuild jika wallpaper berubah
+
+    // Listen to changes in selected wallpaper
+    ever(wallpaperMusicController.selectedWallpaper, (_) {
+      _initializeWallpaper();
     });
+
+    // Inisialisasi wallpaper pertama kali
+    _initializeWallpaper();
   }
 
-  // Toggle visibilitas wallpaper
+  void _initializeWallpaper() {
+    // Dispose controller video lama
+    _videoController.value?.dispose();
+    _videoController.value = null;
+
+    final selectedWallpaper = currentWallpaper;
+
+    // Inisialisasi video jika perlu
+    if (selectedWallpaper.toLowerCase().endsWith('.mp4')) {
+      _initializeVideoController(selectedWallpaper);
+    }
+
+    // Perbarui UI
+    update();
+  }
+
+  void _initializeVideoController(String videoPath) async {
+    try {
+      // Cari controller yang sudah diinisialisasi di WallpaperMusicController
+      final existingController =
+          wallpaperMusicController.getVideoController(videoPath);
+
+      if (existingController != null) {
+        _videoController.value = existingController;
+        existingController.play();
+      } else {
+        // Jika belum diinisialisasi, muat dari asset
+        final controller = VideoPlayerController.asset(videoPath);
+        await controller.initialize();
+        controller.setLooping(true);
+        controller.play();
+
+        _videoController.value = controller;
+      }
+    } catch (e) {
+      debugPrint('Error inisialisasi video: $e');
+    }
+  }
+
   void toggleWallpaperVisibility() {
     _isWallpaperVisible.value = !_isWallpaperVisible.value;
     update();
   }
 
-  // Set opacity wallpaper
   void setWallpaperOpacity(double opacity) {
     _wallpaperOpacity.value = opacity.clamp(0.0, 1.0);
     update();
   }
 
-  // Ganti ke wallpaper selanjutnya
-  void nextWallpaper() {
-    final combinedWallpapers = [..._defaultWallpapers, ..._customWallpapers];
-
-    if (combinedWallpapers.isNotEmpty) {
-      _currentWallpaperIndex.value =
-          (_currentWallpaperIndex.value + 1) % combinedWallpapers.length;
-
-      // Perbarui wallpaper yang dipilih di WallpaperMusicController
-      wallpaperMusicController.selectWallpaper(currentWallpaper);
-
-      // Inisialisasi video controller jika perlu
-      _initializeVideoIfNeeded();
-
-      update();
-    }
-  }
-
-  // Inisialisasi video jika wallpaper saat ini adalah video
-  void _initializeVideoIfNeeded() {
-    // Hapus controller video lama jika ada
-    _videoController?.dispose();
-
-    // Cek apakah wallpaper saat ini adalah video
-    if (currentWallpaper.toLowerCase().endsWith('.mp4')) {
-      _videoController = VideoPlayerController.asset(currentWallpaper);
-      _videoController!.initialize().then((_) {
-        _videoController!.setLooping(true);
-        _videoController!.play();
-        update();
-      }).catchError((error) {
-        debugPrint('Error initializing video player: $error');
-      });
-    } else {
-      _videoController = null; // Reset jika bukan video
-    }
-  }
-
-  // Metode untuk mendapatkan widget wallpaper
   Widget renderWallpaper() {
-    if (!isWallpaperVisible) return const SizedBox.shrink();
+    // Jika wallpaper tidak terlihat
+    if (!_isWallpaperVisible.value) return const SizedBox.shrink();
 
-    // Jika wallpaper adalah video
-    if (currentWallpaper.toLowerCase().endsWith('.mp4')) {
-      return Opacity(
-        opacity: wallpaperOpacity,
-        child: _videoController != null && _videoController!.value.isInitialized
-            ? AspectRatio(
-                aspectRatio: _videoController!.value.aspectRatio,
-                child: VideoPlayer(_videoController!),
-              )
-            : Container(
-                color: Colors.black,
-                child: const Center(
-                    child: CircularProgressIndicator()), // Menampilkan loading
-              ),
-      );
+    final selectedWallpaper = currentWallpaper;
+
+    // Render video
+    if (selectedWallpaper.toLowerCase().endsWith('.mp4')) {
+      return _renderVideoWallpaper();
     }
 
-    // Untuk gambar biasa
+    // Render gambar
+    return _renderImageWallpaper(selectedWallpaper);
+  }
+
+  Widget _renderVideoWallpaper() {
+    final videoController = _videoController.value;
+
+    return videoController != null && videoController.value.isInitialized
+        ? Opacity(
+            opacity: _wallpaperOpacity.value,
+            child: AspectRatio(
+              aspectRatio: videoController.value.aspectRatio,
+              child: VideoPlayer(videoController),
+            ),
+          )
+        : Container(
+            color: Colors.black,
+            child: const Center(child: CircularProgressIndicator()),
+          );
+  }
+
+  Widget _renderImageWallpaper(String imagePath) {
     return Opacity(
-      opacity: wallpaperOpacity,
+      opacity: _wallpaperOpacity.value,
       child: Image.asset(
-        currentWallpaper,
+        imagePath,
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
         errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: Colors.black,
-            child: const Center(
-              child: Icon(
-                Icons.broken_image,
-                color: Colors.white,
-                size: 50,
-              ),
-            ),
+          // Fallback ke gambar default jika gagal
+          return Image.asset(
+            AssetPaths.wallpapers.first,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
           );
         },
       ),
     );
   }
 
-  // Pastikan video controller di-dispose saat controller ditutup
   @override
   void onClose() {
-    _videoController?.dispose();
+    _videoController.value?.dispose();
     super.onClose();
+  }
+}
+
+// Dalam ContentView
+class ContentView extends StatelessWidget {
+  const ContentView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Dapatkan controller
+    final liveWallpaperController = Get.find<LiveWallpaperController>();
+    final wallpaperMusicController = Get.find<WallpaperMusicController>();
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Wallpaper dinamis
+          Obx(() {
+            // Gunakan selectedWallpaper dari WallpaperMusicController
+            final selectedWallpaper =
+                wallpaperMusicController.selectedWallpaper.value;
+
+            // Pastikan wallpaper valid
+            if (selectedWallpaper.isEmpty) {
+              return const SizedBox.shrink();
+            }
+
+            // Render wallpaper
+            return Positioned.fill(
+              child: liveWallpaperController.renderWallpaper(),
+            );
+          }),
+
+          // Kontrol Wallpaper
+          Positioned(
+            top: 40,
+            right: 20,
+            child: Row(
+              children: [
+                // Tombol Visibilitas Wallpaper
+                Obx(() => IconButton(
+                      icon: Icon(
+                        liveWallpaperController.isWallpaperVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.white,
+                      ),
+                      onPressed: () =>
+                          liveWallpaperController.toggleWallpaperVisibility(),
+                    )),
+
+                // Slider Opacity
+                Obx(() => SizedBox(
+                      width: 100,
+                      child: Slider(
+                        value: liveWallpaperController.wallpaperOpacity,
+                        onChanged: (value) =>
+                            liveWallpaperController.setWallpaperOpacity(value),
+                        min: 0.0,
+                        max: 1.0,
+                        activeColor: Colors.white,
+                        inactiveColor: Colors.white54,
+                      ),
+                    )),
+              ],
+            ),
+          ),
+
+          // Konten utama Anda
+          // ...
+        ],
+      ),
+    );
   }
 }

@@ -275,7 +275,6 @@ import 'package:ebookapp/app/modules/motivasi/controllers/live_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:ebookapp/app/data/models/motivasi_model.dart';
 import 'package:ebookapp/app/modules/motivasi/controllers/content_controller.dart';
 import 'package:ebookapp/app/modules/settings/controllers/setting_theme_controller.dart';
@@ -295,8 +294,8 @@ class ContentView extends GetView<ContentController> {
       );
     }
 
-    // Inisialisasi Controller
-    final liveWallpaperController = Get.put(LiveWallpaperController());
+    // Inisialisasi Controller hanya sekali
+    final liveWallpaperController = Get.find<LiveWallpaperController>();
     final audioController = Get.put(AudioController());
     final themeController = Get.find<ThemeController>();
     final userController = Get.find<UserController>();
@@ -306,11 +305,14 @@ class ContentView extends GetView<ContentController> {
       body: Stack(
         children: [
           // Live Wallpaper
-          Obx(() => liveWallpaperController.isWallpaperVisible
-              ? Positioned.fill(
-                  child: liveWallpaperController.renderWallpaper(),
-                )
-              : const SizedBox.shrink()),
+          Obx(() {
+            // Logika tambahan untuk memastikan wallpaper render sesuai dengan visibilitas
+            return liveWallpaperController.isWallpaperVisible
+                ? Positioned.fill(
+                    child: liveWallpaperController.renderWallpaper(),
+                  )
+                : const SizedBox.shrink();
+          }),
 
           // Konten Utama
           _buildBody(
@@ -335,7 +337,7 @@ class ContentView extends GetView<ContentController> {
       right: 20,
       child: Row(
         children: [
-          // Tombol Visibility Wallpaper
+          // Tombol Visibilitas Wallpaper
           Obx(() => IconButton(
                 icon: Icon(
                   liveWallpaperController.isWallpaperVisible
@@ -361,11 +363,7 @@ class ContentView extends GetView<ContentController> {
                 ),
               )),
 
-          // Tombol Ganti Wallpaper
-          IconButton(
-            icon: const Icon(Icons.switch_access_shortcut, color: Colors.white),
-            onPressed: () => liveWallpaperController.nextWallpaper(),
-          ),
+          // Tombol Ganti Wallpape
         ],
       ),
     );
