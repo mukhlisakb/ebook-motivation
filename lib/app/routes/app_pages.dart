@@ -1,3 +1,5 @@
+import 'package:ebookapp/app/modules/login/views/forgot_password.dart';
+import 'package:ebookapp/app/modules/login/views/success_forgot.dart';
 import 'package:get/get.dart';
 
 import '../modules/home/bindings/home_binding.dart';
@@ -59,8 +61,18 @@ class AppPages {
       binding: RegisterBinding(),
     ),
     GetPage(
+      name: _Paths.forgotPassword,
+      page: () => ForgotPassword(),
+      binding: RegisterBinding(),
+    ),
+    GetPage(
       name: _Paths.successRegis,
       page: () => SuccessRegister(),
+      binding: RegisterBinding(),
+    ),
+    GetPage(
+      name: _Paths.successForgot,
+      page: () => SuccessPassword(),
       binding: RegisterBinding(),
     ),
     // GetPage(

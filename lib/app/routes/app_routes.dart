@@ -5,7 +5,9 @@ abstract class Routes {
   static const home = _Paths.home;
   static const login = _Paths.login;
   static const register = _Paths.register;
+  static const forgotPassword = _Paths.forgotPassword;
   static const successRegis = _Paths.successRegis;
+  static const successForgot = _Paths.successForgot;
   static const confirmPass = _Paths.confirmPass;
   static const motivasi = _Paths.motivasi;
   static const motivationContents = _Paths.motivationContents;
@@ -35,7 +37,9 @@ abstract class _Paths {
   static const home = '/home';
   static const login = '/login';
   static const register = '/register';
+  static const forgotPassword = '/forgot-password';
   static const successRegis = '/success-regis';
+  static const successForgot = '/success-forgot';
   static const confirmPass = '/confirm';
   static const motivasi = '/motivasi'; // Pastikan ini sesuai dengan rute di UI
   static const motivationContents = '/motivation/contents';

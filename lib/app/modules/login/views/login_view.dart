@@ -23,6 +23,7 @@ class LoginView extends GetView<LoginController> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
+            SizedBox(height: 100,),
             // Logo
             Center(
               child: Padding(
@@ -157,12 +158,12 @@ class LoginView extends GetView<LoginController> {
                 backgroundColor: Color(0xFF32497B),
               ),
             ),
-            const SizedBox(height: 250),
+            const SizedBox(height: 90),
 
             // Forgot Password
             TextButton(
               onPressed: () {
-                // Tindakan jika lupa password
+                Get.toNamed('/forgot-password');
               },
               child: Text(
                 'Lupa kata sandi?',
