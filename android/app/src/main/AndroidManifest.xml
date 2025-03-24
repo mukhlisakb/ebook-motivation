@@ -7,9 +7,9 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>  
 
     <application  
-        android:label="ebookapp"  
+        android:label="Ebook Motivasi"  
         android:name="${applicationName}"  
-        android:icon="@mipmap/ic_launcher">  
+        android:icon="@mipmap/launcher_icon">  
 
         <activity  
             android:name=".MainActivity"  

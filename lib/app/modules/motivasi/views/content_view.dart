@@ -732,7 +732,7 @@ class ContentView extends GetView<ContentController> {
                   liveWallpaperController.isWallpaperVisible
                       ? Icons.visibility
                       : Icons.visibility_off,
-                  color: Colors.black,
+                  color: Colors.white,
                 ),
                 onPressed: () =>
                     liveWallpaperController.toggleWallpaperVisibility(),
@@ -745,7 +745,7 @@ class ContentView extends GetView<ContentController> {
                       liveWallpaperController.setWallpaperOpacity(value),
                   min: 0.0,
                   max: 1.0,
-                  activeColor: Colors.black,
+                  activeColor: Colors.white,
                   inactiveColor: Colors.white54,
                 ),
               )),
