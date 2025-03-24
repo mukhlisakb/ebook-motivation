@@ -596,7 +596,7 @@ class HomeView extends GetView<HomeController> {
                     return GestureDetector(  
                       onTap: () {  
                         // Navigasi ke halaman detail pengingat  
-                        Get.toNamed('/pengingat/contents', arguments: subcategory);  
+                        Get.toNamed('/reminders/contents', arguments: subcategory);  
                       },  
                       child: Container(  
                         decoration: BoxDecoration(  

@@ -358,14 +358,14 @@ class PaymentDetail extends GetView<PaymentController> {
                       if (selectedPaymentType == null ||
                           selectedChannelCode == null) {
                         Get.snackbar(
-                            'Error', 'Pilih metode pembayaran terlebih dahulu');
+                            'Gagal', 'Pilih metode pembayaran terlebih dahulu');
                       } else {
                         // Upgrade akun dan ambil paymentId
                         await controller.upgradeAccount(
                           paymentType: selectedPaymentType!,
                           channelCode: selectedChannelCode!,
-                          phoneNumber:
-                              '+6280845048545', // Nomor telepon default
+                          phoneNumber: 
+                              '+628888888888', // Nomor telepon default
                         );
 
                         // Debugging: Tampilkan nilai paymentId
@@ -373,7 +373,7 @@ class PaymentDetail extends GetView<PaymentController> {
 
                         // Tunggu hingga paymentId diatur
                         if (controller.paymentId.value == null) {
-                          Get.snackbar('Error', 'Payment ID tidak ditemukan');
+                          Get.snackbar('Gagal', 'Mohon di Tunggu');
                           return;
                         }
 
@@ -390,7 +390,7 @@ class PaymentDetail extends GetView<PaymentController> {
                         if (controller.virtualAccountNumber.value == null ||
                             controller.expiresAt.value == null) {
                           Get.snackbar(
-                              'Error', 'Data pembayaran tidak ditemukan');
+                              'Gagal', 'Data pembayaran tidak ditemukan');
                           return;
                         }
 

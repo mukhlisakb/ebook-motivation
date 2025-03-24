@@ -10,6 +10,7 @@ class UserController extends GetxController {
   var userResponse = Rxn<UserResponse>(); // Menyimpan data UserResponse
   var isPremium = false.obs; // Menyimpan status premium user
   var userId = Rxn<int>();
+  var phoneNumber = ''.obs;
   final isScrollLimitReached = false.obs;
 
   @override
@@ -144,26 +145,27 @@ class UserController extends GetxController {
       );
 
       if (response.statusCode != 200) {
-        Get.snackbar('Error', 'Failed to update user profile');
-        debugPrint('Error response: ${response.body}');
+        Get.snackbar('Gagal', 'Gagal untuk mengupdate');
+        debugPrint('Gagal response: ${response.body}');
         return;
       }
 
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['data'] == null) {
         Get.snackbar(
-            'Error', 'Failed to update profile: ${jsonResponse['message']}');
+            'Gagal', 'Untuk mengupdate profil: ${jsonResponse['message']}');
         return;
       }
 
       // Update userResponse dengan data terbaru
       userResponse.value = UserResponse.fromJson(jsonResponse);
+      phoneNumber.value = data['phone_number'] ?? phoneNumber.value;
 
-      Get.snackbar('Success', 'User profile updated successfully');
-      debugPrint('✅ User profile updated successfully: ${userResponse.value}');
+      Get.snackbar('Berhasil!', 'update berhasil');
+      debugPrint('✅ Update Berhasil: ${userResponse.value}');
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred while updating user profile.');
-      debugPrint("Error updating user profile: $e");
+      Get.snackbar('Gagal', 'Terjadi Error.');
+      debugPrint("Gagal update profil: $e");
     } finally {
       isLoading.value = false;
     }

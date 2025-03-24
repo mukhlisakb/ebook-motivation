@@ -247,6 +247,7 @@
 // }
 
 import 'dart:typed_data';
+import 'dart:async'; // Tambahkan import ini
 import 'package:ebookapp/app/data/models/motivasi_model.dart';
 import 'package:ebookapp/app/modules/motivasi/controllers/audio_controller.dart';
 import 'package:ebookapp/app/modules/motivasi/controllers/live_controller.dart';
@@ -528,33 +529,72 @@ class ContentPengingatView extends GetView<PengingatController> {
 
   Widget _buildPageItem(int index, Uint8List imageBytes) {
     return Center(
-      child: Stack(
-        alignment: Alignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min, // Menyesuaikan ukuran kolom
         children: [
           Container(
-            width: 250,
-            height: 350,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.black, width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: const Offset(0, 3),
-                ),
-              ],
+            constraints: BoxConstraints(
+              maxWidth: double.infinity, // Mengikuti lebar maksimal
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: _buildImageWithErrorHandling(imageBytes),
             ),
           ),
-          _buildIndexOverlay(index),
+          FutureBuilder<Size>(
+            future: _getImageSize(
+                'assets/images/watermark_icon.png'), // Path gambar watermark
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return SizedBox(); // Tampilkan nothing sementara menunggu
+              }
+
+              final imageSize = snapshot.data;
+
+              return Container(
+                width: imageSize?.width ??
+                    100, // Mengatur lebar watermark mengikuti ukuran gambar
+                height: imageSize?.height ?? 100, // Mengatur tinggi watermark
+                child: Image.asset(
+                  'assets/images/watermark_icon.png', // Path gambar watermark
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Center(
+                      child: Text(
+                        "Gambar tidak ditemukan",
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          ),
         ],
       ),
     );
+  }
+
+  // Fungsi untuk mendapatkan ukuran gambar dari asset
+  Future<Size> _getImageSize(String assetPath) async {
+    final Completer<Size> completer = Completer();
+
+    // Memuat gambar untuk mendapatkan ukuran
+    final Image image = Image.asset(assetPath);
+    image.image
+        .resolve(const ImageConfiguration())
+        .addListener(ImageStreamListener(
+          (ImageInfo info, bool sync) {
+            completer.complete(Size(
+                info.image.width.toDouble(), info.image.height.toDouble()));
+          },
+          onError: (exception, stackTrace) {
+            completer.complete(Size(
+                100, 100)); // Kembalikan ukuran default jika terjadi kesalahan
+          },
+        ));
+
+    return completer.future;
   }
 
   Widget _buildIndexOverlay(int index) {
@@ -619,16 +659,9 @@ class ContentPengingatView extends GetView<PengingatController> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.broken_image_outlined,
-              color: Colors.grey,
-              size: 50,
-            ),
+            Icon(Icons.broken_image_outlined, color: Colors.grey, size: 50),
             SizedBox(height: 10),
-            Text(
-              "Gambar tidak tersedia",
-              style: TextStyle(color: Colors.grey),
-            ),
+            Text("Gambar tidak tersedia", style: TextStyle(color: Colors.grey)),
           ],
         ),
       ),

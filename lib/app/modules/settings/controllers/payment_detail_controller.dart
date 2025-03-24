@@ -116,14 +116,14 @@ class PaymentController extends GetxController {
       );  
 
       if (response.statusCode != 200) {  
-        _handleApiError('Failed to upgrade account', response.body);  
+        _handleApiError('Gagal untuk mengupdate', response.body);  
         return;  
       }  
 
       final jsonResponse = json.decode(response.body);  
       if (jsonResponse['data'] == null) {  
         _handleApiError(  
-            'Failed to upgrade account: ${jsonResponse['message']}', null);  
+            'Gagal untuk mengupdate: ${jsonResponse['message']}', null);  
         return;  
       }  
 
