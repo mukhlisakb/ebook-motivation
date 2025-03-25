@@ -51,7 +51,9 @@ dependencies:
   smooth_page_indicator: ^1.2.1
   transparent_image: ^2.0.1
   url_launcher: ^6.3.1
+  video_compress: ^3.1.4
   video_player: ^2.9.3
+  # video_thumbnail: ^0.5.3
   webp: ^1.0.0+1
 
 dev_dependencies:
@@ -128,6 +130,17 @@ flutter:
     - assets/pictures/Wallpaper_img_07.jpg
     - assets/pictures/Wallpaper_img_08.jpg
     - assets/pictures/Wallpaper_img_09.jpg
+
+    # Thumbnails
+    - assets/thumbnails/thumbnail1.png
+    - assets/thumbnails/thumbnail2.png
+    - assets/thumbnails/thumbnail3.png
+    - assets/thumbnails/thumbnail4.png
+    - assets/thumbnails/thumbnail5.png
+    - assets/thumbnails/thumbnail6.png
+    - assets/thumbnails/thumbnail7.png
+    - assets/thumbnails/thumbnail8.png
+    - assets/thumbnails/thumbnail9.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

@@ -1,0 +1,2 @@
+/Users/ruxxcon/MobileDev/Flutter-Dev/Ebook_motivation/ebookapp_v2/ebook-motivation/android/app/.cxx/Debug/q691x2n3/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/ruxxcon/MobileDev/Flutter-Dev/Ebook_motivation/ebookapp_v2/ebook-motivation/android/app/.cxx/Debug/q691x2n3/armeabi-v7a/CMakeFiles/rebuild_cache.dir
